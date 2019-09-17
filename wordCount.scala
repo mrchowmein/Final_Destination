@@ -10,3 +10,5 @@ val currentMinute = now.get(Calendar.MINUTE)
 val currentHour = now.get(Calendar.HOUR_OF_DAY)
 
 counts.coalesce(1,true).saveAsTextFile("wordCount"+currentHour+currentMinute)
+
+System.exit(0)
