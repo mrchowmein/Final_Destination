@@ -1,25 +1,28 @@
+import os
 import requests
 import time
 import geocoder
 import csv
 
+
 nystationJson = requests.get('https://gbfs.citibikenyc.com/gbfs/es/station_information.json').json()
 
 stationDict = {}
 
+if os.path.exists('stationZip.csv') == True:
+    print("Will use existing stationZip.csv")
+    with open('stationZip.csv') as csvfile:
+        readCSV = csv.reader(csvfile, delimiter=',')
+        next(readCSV)
 
-with open('stationZip.csv') as csvfile:
-    readCSV = csv.reader(csvfile, delimiter=',')
-    next(readCSV)
-
-    for row in readCSV:
-        stationId = int(row[0])
-        postal = row[1]
-        lat = row[2]
-        long = row[3]
-        if postal != "":
-            print("adding: ", stationId, " ", postal)
-            stationDict[stationId] = [lat, long, postal]
+        for row in readCSV:
+            stationId = int(row[0])
+            postal = row[1]
+            lat = row[2]
+            long = row[3]
+            if postal != "":
+                print("adding: ", stationId, " ", postal)
+                stationDict[stationId] = [lat, long, postal]
 
 
 for each in nystationJson['data']['stations']:
