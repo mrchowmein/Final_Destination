@@ -19,15 +19,15 @@ val dateToTimeStamp = udf((starttime: String) => {
 
 
 //read citibike data as df
-//val bikeDataPath = ("s3a://citibiketripdata/201907-citibike-tripdata.csv")
+val bikeDataPath = ("s3a://citibiketripdata/201907-citibike-tripdata.csv")
 
-val bikeRDD = sc.textFile("s3a://citibiketripdata/201907-citibike-tripdata.csv")
+//val bikeRDD = sc.textFile("s3a://citibiketripdata/201907-citibike-tripdata.csv")
 
 val bikeNoHead = bikeRDD.map(line => line.split(",")).filter(line => line(0).forall(_.isDigit))
 
 
 
-//import org.apache.spark.sql.types._
+import org.apache.spark.sql.types._
 
 val schema = new StructType().add("tripduration",StringType,true).add("starttime",StringType,true).add("stoptime",StringType,true).add("start station id",StringType,true).add("start station name",StringType,true).add("start station latitude",StringType,true).add("start station longitude",StringType,true).add("end station id",StringType,true).add("end station name",StringType,true).add("end station latitude",StringType,true).add("end station longitude",StringType,true).add("bikeid",StringType,true).add("usertype",StringType,true).add("birth year",StringType,true).add("gender",StringType,true)
 
@@ -66,6 +66,12 @@ val bikeDF3 = bikeDF2.withColumn("stoptime",dateToTimeStamp($"stoptime"))
 
 bikeDF3.select("starttime", "start station id", "stoptime", "end station id").show()
 
-val bikeDF4 = bikeDF3.select("starttime", "start station id", "stoptime", "end station id").groupBy("starttime", "start station id", "end station id").count()
+val departureDF = bikeDF3.select("starttime", "start station id", "end station id").groupBy("starttime", "start station id", "end station id").count()
 
-bikeDF4.orderBy($"starttime".asc, $"start station id".asc).show()
+departureDF.orderBy($"starttime".asc, $"start station id".asc).show()
+
+val arrivalDF = bikeDF3.select("starttime", "end station id", "start station id").groupBy("starttime", "end station id", "start station id").count()
+
+arrivalDF.orderBy($"starttime".asc, $"end station id".asc).show()
+
+
