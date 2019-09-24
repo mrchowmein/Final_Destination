@@ -74,8 +74,17 @@ departureDF.orderBy($"starttime".asc, $"start station id".asc).show()
 val arrivalDF = bikeDF3.select("starttime", "end station id", "start station id").groupBy("starttime", "end station id", "start station id").count()
 arrivalDF.orderBy($"starttime".asc, $"end station id".asc).show()
 
-
-val ageDF = bikeDF3.select("starttime", "start station id", "end station id", bikeDF3("birth year").cast(IntegerType)).groupBy("starttime", "start station id", "end station id", "birth year").avg("birth year").show()
-
+// create DF for depart stations with the distribution of age
+val ageDF_depart = bikeDF3.select("starttime", "start station id", "end station id", "birth year").groupBy("starttime", "start station id", "end station id").avg("birth year")
 ageDF.orderBy($"starttime".asc, $"start station id".asc).show()
 
+// create DF for arrival stations with the distribution of age
+val ageDF_arrival = bikeDF3.select("starttime", "end station id", "start station id", "birth year").groupBy("starttime", "end station id", "start station id").avg("birth year")
+ageDF_arrival.orderBy($"starttime".asc, $"end station id".asc).show()
+
+val yearToAge = udf((yearInt: Integer) => { 
+	val age = 2019-yearInt
+	age
+})
+
+val ageDF_arrival2 = ageDF_arrival.withColumn("avg(birth year)",yearToAge($"avg(birth year)").alias("age"))
