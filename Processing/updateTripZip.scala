@@ -19,17 +19,17 @@ val dateToTimeStamp = udf((starttime: String) => {
 
 
 //read citibike data as df
-//val bikeDataPath = ("s3a://citibiketripdata/201907-citibike-tripdata.csv")
+val bikeDataPath = ("s3a://citibiketripdata/201907-citibike-tripdata.csv")
 
-val bikeRDD = sc.textFile("s3a://citibiketripdata/201907-citibike-tripdata.csv")
+//val bikeRDD = sc.textFile("s3a://citibiketripdata/201907-citibike-tripdata.csv")
 
 val bikeNoHead = bikeRDD.map(line => line.split(",")).filter(line => line(0).forall(_.isDigit))
 
 
 
-//import org.apache.spark.sql.types._
+import org.apache.spark.sql.types._
 
-val schema = new StructType().add("tripduration",StringType,true).add("starttime",StringType,true).add("stoptime",StringType,true).add("start station id",StringType,true).add("start station name",StringType,true).add("start station latitude",StringType,true).add("start station longitude",StringType,true).add("end station id",StringType,true).add("end station name",StringType,true).add("end station latitude",StringType,true).add("end station longitude",StringType,true).add("bikeid",StringType,true).add("usertype",StringType,true).add("birth year",StringType,true).add("gender",StringType,true)
+val schema = new StructType().add("tripduration",StringType,true).add("starttime",StringType,true).add("stoptime",StringType,true).add("start station id",StringType,true).add("start station name",StringType,true).add("start station latitude",StringType,true).add("start station longitude",StringType,true).add("end station id",StringType,true).add("end station name",StringType,true).add("end station latitude",StringType,true).add("end station longitude",StringType,true).add("bikeid",StringType,true).add("usertype",StringType,true).add("birth year",IntegerType,true).add("gender",StringType,true)
 
 
 /*
@@ -53,7 +53,7 @@ val schema = new StructType().add("tripduration",StringType,true).add("starttime
 
 */
 
-
+//data citi bike prep  
 val bikeData = spark.read.format("csv").option("header", "false").schema(schema).option("mode", "DROPMALFORMED").load(bikeDataPath)
 //val bikeDF = spark.read.format("csv").option("header", "false").option("mode", "DROPMALFORMED").load(bikeDataPath)
 
@@ -64,8 +64,18 @@ val bikeDF2 = bikeDF.withColumn("starttime",dateToTimeStamp($"starttime"))
 
 val bikeDF3 = bikeDF2.withColumn("stoptime",dateToTimeStamp($"stoptime"))
 
-bikeDF3.select("starttime", "start station id", "stoptime", "end station id").show()
+//bikeDF3.select("starttime", "start station id", "stoptime", "end station id").show()
 
-val bikeDF4 = bikeDF3.select("starttime", "start station id", "stoptime", "end station id").groupBy("starttime", "start station id", "end station id").count()
+// create DF for departure stations with the distribution of final destinations
+val departureDF = bikeDF3.select("starttime", "start station id", "end station id").groupBy("starttime", "start station id", "end station id").count()
+departureDF.orderBy($"starttime".asc, $"start station id".asc).show()
 
-bikeDF4.orderBy($"starttime".asc, $"start station id".asc).show()
+// create DF for arrival stations with the distribution of start destinations
+val arrivalDF = bikeDF3.select("starttime", "end station id", "start station id").groupBy("starttime", "end station id", "start station id").count()
+arrivalDF.orderBy($"starttime".asc, $"end station id".asc).show()
+
+
+val ageDF = bikeDF3.select("starttime", "start station id", "end station id", bikeDF3("birth year").cast(IntegerType)).groupBy("starttime", "start station id", "end station id", "birth year").avg("birth year").show()
+
+ageDF.orderBy($"starttime".asc, $"start station id".asc).show()
+
