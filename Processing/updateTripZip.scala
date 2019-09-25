@@ -12,24 +12,23 @@ val joinedZipTrips = idZipRDD.join(reducedTrips)
 
 val tripZipRDD = joinedZipTrips.map(t => (t._2._2,t._2._1)).sortByKey(true)
 
-val dateToTimeStamp = udf((starttime: String) => { 
-	starttime.split(':')(0)
-})
+
 
 
 
 //read citibike data as df
-val bikeDataPath = ("s3a://citibiketripdata/201907-citibike-tripdata.csv")
+
 
 //val bikeRDD = sc.textFile("s3a://citibiketripdata/201907-citibike-tripdata.csv")
 
-val bikeNoHead = bikeRDD.map(line => line.split(",")).filter(line => line(0).forall(_.isDigit))
 
 
 
 import org.apache.spark.sql.types._
+import java.lang.Math
 
-val schema = new StructType().add("tripduration",DoubleType,true).add("starttime",StringType,true).add("stoptime",StringType,true).add("start station id",StringType,true).add("start station name",StringType,true).add("start station latitude",StringType,true).add("start station longitude",StringType,true).add("end station id",StringType,true).add("end station name",StringType,true).add("end station latitude",StringType,true).add("end station longitude",StringType,true).add("bikeid",StringType,true).add("usertype",StringType,true).add("birth year",IntegerType,true).add("gender",StringType,true)
+
+val bikeDataPath = ("s3a://citibiketripdata/201907-citibike-tripdata.csv")
 
 
 /*
@@ -61,65 +60,86 @@ val schema = new StructType().add("tripduration",DoubleType,true).add("starttime
 // }
 
 //data citi bike prep  
-val bikeData = spark.read.format("csv").option("header", "false").schema(schema).option("mode", "DROPMALFORMED").load(bikeDataPath)
-//val bikeDF = spark.read.format("csv").option("header", "false").option("mode", "DROPMALFORMED").load(bikeDataPath)
 
-//val bikeDF  = bikeData.filter(row => row.getAs[String]("tripduration").matches("""\d+"""))
+def loadCitiTripData (bikeDataPath : String): DataFrame =  { 
 
-
-val bikeDF2 = bikeData.withColumn("starttime",dateToTimeStamp($"starttime"))
-
-//val bikeDF3 = bikeDF2.withColumn("stoptime",dateToTimeStamp($"stoptime"))
-
-//bikeDF3.select("starttime", "start station id", "stoptime", "end station id").show()
-
-// create DF for departure stations with the distribution of final destinations
-val departureDF = bikeDF3.select("starttime", "start station id", "end station id").groupBy("starttime", "start station id", "end station id").count()
-departureDF.orderBy($"starttime".asc, $"start station id".asc).show()
-
-// create DF for arrival stations with the distribution of start destinations
-val arrivalDF = bikeDF3.select("starttime", "end station id", "start station id").groupBy("starttime", "end station id", "start station id").count()
-arrivalDF.orderBy($"starttime".asc, $"end station id".asc).show()
-
-// create DF for depart stations with the distribution of age
-val ageDF_depart = bikeDF3.select("starttime", "start station id", "end station id", "birth year").groupBy("starttime", "start station id", "end station id").avg("birth year")
-
-//ageDF.orderBy($"starttime".asc, $"start station id".asc).show()
-
-// create DF for arrival stations with the distribution of age
-val ageDF_arrival = bikeDF3.select("starttime", "end station id", "start station id", "birth year").groupBy("starttime", "end station id", "start station id").avg("birth year")
-ageDF_arrival.orderBy($"starttime".asc, $"end station id".asc).show()
-
-val yearToAge = udf((yearInt: Integer) => { 
-	val age = 2019-yearInt
-	age
-})
-
-//calcuated age df
-val ageDF_arrival2 = ageDF_arrival.withColumn("avg(birth year)",yearToAge($"avg(birth year)").alias("age"))
-
-val ageDF_depart2 = ageDF_depart.withColumn("avg(birth year)",yearToAge($"avg(birth year)").alias("age"))
-ageDF_depart2.orderBy($"starttime".asc, $"start station id".asc).show()
+	val schema = new StructType().add("tripduration",DoubleType,true).add("starttime",StringType,true).add("stoptime",StringType,true).add("start station id",StringType,true).add("start station name",StringType,true).add("start station latitude",StringType,true).add("start station longitude",StringType,true).add("end station id",StringType,true).add("end station name",StringType,true).add("end station latitude",StringType,true).add("end station longitude",StringType,true).add("bikeid",StringType,true).add("usertype",StringType,true).add("birth year",IntegerType,true).add("gender",StringType,true)
+	val bikeData = spark.read.format("csv").option("header", "false").schema(schema).option("mode", "DROPMALFORMED").load(bikeDataPath)
+	bikeData
+}
 
 
-//duration dataframe
-import java.lang.Math;
 
 val secToMinTime = udf((time_in_sec: Double) => { 
 	val min = Math.round(time_in_sec/60 * 100.00)/100.00
 	min
 })
 
+val dateToTimeStamp = udf((starttime: String) => { 
+	starttime.split(':')(0)
+})
 
-val durationDF = bikeDF3.select("starttime", "start station id", "end station id", "tripduration").groupBy("starttime", "start station id", "end station id").avg("tripduration")
-durationDF.orderBy($"starttime".asc, $"start station id".asc).show()
 
-val durationInMin= durationDF.withColumn("avg(tripduration)",secToMinTime($"avg(tripduration)").alias("duration"))
+val bikeData = loadCitiTripData(bikeDataPath)
+val bikeDF2 = bikeData.withColumn("starttime",dateToTimeStamp($"starttime"))
+val bikeDF3 = bikeDF2.withColumn("stoptime",dateToTimeStamp($"stoptime"))
 
-val joinSeq = Seq("starttime", "start station id", "end station id")
+// create DF for departure stations with the distribution of final destinations
+
+def joinedDepartAndDuration = {
+
+	val departureDF = bikeDF3.select("starttime", "start station id", "end station id").groupBy("starttime", "start station id", "end station id").count()
+
+	val durationDF = bikeDF3.select("starttime", "start station id", "end station id", "tripduration").groupBy("starttime", "start station id", "end station id").avg("tripduration")
+	val durationInMin= durationDF.withColumn("avg(tripduration)",secToMinTime($"avg(tripduration)").alias("duration"))
+	val joinSeq = Seq("starttime", "start station id", "end station id")
+	val deptzips_duration= departureDF.join(durationInMin, joinSeq).orderBy($"starttime".asc, $"start station id".asc)
+	deptzips_duration
+}
+
+
+val joinedDF = joinedDepartAndDuration
+
+//departureDF.orderBy($"starttime".asc, $"start station id".asc).show()
+
+// // create DF for arrival stations with the distribution of start destinations
+// val arrivalDF = bikeDF3.select("starttime", "end station id", "start station id").groupBy("starttime", "end station id", "start station id").count()
+// arrivalDF.orderBy($"starttime".asc, $"end station id".asc).show()
+
+
+
+// create DF for depart stations with the distribution of age
+// val ageDF_depart = bikeDF3.select("starttime", "start station id", "end station id", "birth year").groupBy("starttime", "start station id", "end station id").avg("birth year")
+
+// //ageDF.orderBy($"starttime".asc, $"start station id".asc).show()
+
+// // create DF for arrival stations with the distribution of age
+// val ageDF_arrival = bikeDF3.select("starttime", "end station id", "start station id", "birth year").groupBy("starttime", "end station id", "start station id").avg("birth year")
+// ageDF_arrival.orderBy($"starttime".asc, $"end station id".asc).show()
+
+// val yearToAge = udf((yearInt: Integer) => { 
+// 	val age = 2019-yearInt
+// 	age
+// })
+
+//calcuated age df
+// val ageDF_arrival2 = ageDF_arrival.withColumn("avg(birth year)",yearToAge($"avg(birth year)").alias("age"))
+
+// val ageDF_depart2 = ageDF_depart.withColumn("avg(birth year)",yearToAge($"avg(birth year)").alias("age"))
+// ageDF_depart2.orderBy($"starttime".asc, $"start station id".asc).show()
+
+
+//duration dataframe
+
+
+
+
+
 
 
 
 //joined age, duration and endstation count
-val end_ageDF = departureDF.join(ageDF_depart2, joinSeq).join(durationInMin, joinSeq).orderBy($"starttime".asc, $"start station id".asc)
+
+
+
 
