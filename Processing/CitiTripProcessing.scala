@@ -1,8 +1,15 @@
 import org.apache.spark.sql.types._
 import java.lang.Math
+import org.apache.spark.sql.DataFrame
+
+
 
 
 val bikeDataPath = ("s3a://citibiketripdata/201907-citibike-tripdata.csv")
+
+
+//val dbCredPath: String = "hdfs://ec2-35-163-178-143.us-west-2.compute.amazonaws.com:9000/cred/dbCred.txt"
+
 
 
 /*
@@ -37,7 +44,8 @@ val bikeDataPath = ("s3a://citibiketripdata/201907-citibike-tripdata.csv")
 
 def loadCitiTripData (bikeDataPath : String): DataFrame =  { 
 
-	val schema = new StructType().add("tripduration",DoubleType,true).add("starttime",StringType,true).add("stoptime",StringType,true).add("start station id",StringType,true).add("start station name",StringType,true).add("start station latitude",StringType,true).add("start station longitude",StringType,true).add("end station id",StringType,true).add("end station name",StringType,true).add("end station latitude",StringType,true).add("end station longitude",StringType,true).add("bikeid",StringType,true).add("usertype",StringType,true).add("birth year",IntegerType,true).add("gender",StringType,true)
+
+	val schema = (new StructType).add("tripduration",DoubleType,true).add("starttime",StringType,true).add("stoptime",StringType,true).add("start station id",StringType,true).add("start station name",StringType,true).add("start station latitude",StringType,true).add("start station longitude",StringType,true).add("end station id",StringType,true).add("end station name",StringType,true).add("end station latitude",StringType,true).add("end station longitude",StringType,true).add("bikeid",StringType,true).add("usertype",StringType,true).add("birth year",IntegerType,true).add("gender",StringType,true)
 	val bikeData = spark.read.format("csv").option("header", "false").schema(schema).option("mode", "DROPMALFORMED").load(bikeDataPath)
 	bikeData
 }
@@ -55,16 +63,18 @@ val dateToTimeStamp = udf((starttime: String) => {
 
 //geocoding
 
-val zipPath: String = "hdfs://ec2-35-163-178-143.us-west-2.compute.amazonaws.com:9000/zipcode_tables/"
+val zipPath: String = "hdfs://ec2-35-163-178-143.us-west-2.compute.amazonaws.com:9000/zipcode_tables/stationZip.csv"
 
 def createZipMap (zipTablePath : String) = {
-	val zipTable = sc.textFile(zipPath)
+	val zipTable = sc.textFile(zipTablePath)
 	val zipRDD = zipTable.map(line => line.split(','))
 	val idZipRDD = zipRDD.map(line=>(line(0),line(1))).collectAsMap()
-idZipRDD
+	idZipRDD
 
 }
-val zipMap = createZipRDD(zipPath)
+
+val zipMap = createZipMap(zipPath)
+
 
 val getZipWithID = udf((startStion: String) => { 
 	
@@ -112,6 +122,7 @@ def joinedDepartAndDuration = {
 
 val joinedDF = joinedDepartAndDuration
 
+
 :require postgresql-42.2.8.jar
 val prop = new java.util.Properties
 prop.setProperty("driver", "org.postgresql.Driver")
@@ -120,9 +131,10 @@ prop.setProperty("password", "")
 
 val url = "jdbc:postgresql://10.0.0.9:5432/testing"
 val table = "t2"
-val table = "sample_data_table"
 
-joinedDFWithZip1.write.mode("overwrite").jdbc(url, "t2", prop)
+
+joinedDF.write.mode("overwrite").jdbc(url, table, prop)
+
 
 //departureDF.orderBy($"starttime".asc, $"start station id".asc).show()
 
