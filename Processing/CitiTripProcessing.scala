@@ -1,29 +1,3 @@
-val zipPath: String = "hdfs://ec2-35-163-178-143.us-west-2.compute.amazonaws.com:9000/zipcode_tables/"
-val zipTable = sc.textFile(zipPath)
-val zipRDD = zipTable.map(line => line.split(','))
-val idZipRDD = zipRDD.map(line=>(line(0),line(1)))
-
-val bikeRDD = sc.textFile("s3a://citibiketripdata/201907-citibike-tripdata.csv")
-//val bikeRDD = sc.textFile("s3a://citibiketripdata/")
-val bikeIdStatRDD = bikeRDD.map(line => line.split(',')).map(line=>(line(3),1))
-val reducedTrips = bikeIdStatRDD.reduceByKey(_+_)
-
-val joinedZipTrips = idZipRDD.join(reducedTrips)
-
-val tripZipRDD = joinedZipTrips.map(t => (t._2._2,t._2._1)).sortByKey(true)
-
-
-
-
-
-//read citibike data as df
-
-
-//val bikeRDD = sc.textFile("s3a://citibiketripdata/201907-citibike-tripdata.csv")
-
-
-
-
 import org.apache.spark.sql.types._
 import java.lang.Math
 
@@ -79,18 +53,56 @@ val dateToTimeStamp = udf((starttime: String) => {
 	starttime.split(':')(0)
 })
 
+//geocoding
+
+val zipPath: String = "hdfs://ec2-35-163-178-143.us-west-2.compute.amazonaws.com:9000/zipcode_tables/"
+
+def createZipMap (zipTablePath : String) = {
+	val zipTable = sc.textFile(zipPath)
+	val zipRDD = zipTable.map(line => line.split(','))
+	val idZipRDD = zipRDD.map(line=>(line(0),line(1))).collectAsMap()
+idZipRDD
+
+}
+val zipMap = createZipRDD(zipPath)
+
+val getZipWithID = udf((startStion: String) => { 
+	
+	if(zipMap.contains(startStion)) 
+		 if(zipMap(startStion).length >0){
+		 	zipMap(startStion)
+		 } else {
+		 	val none = "00000"
+			none
+		 }
+		 
+
+	else{
+		val none = "00000"
+		none
+	} 
+	
+})
+
+
+
+
 
 val bikeData = loadCitiTripData(bikeDataPath)
-val bikeDF2 = bikeData.withColumn("starttime",dateToTimeStamp($"starttime"))
-val bikeDF3 = bikeDF2.withColumn("stoptime",dateToTimeStamp($"stoptime"))
+val bikeDataStart = bikeData.withColumn("starttime",dateToTimeStamp($"starttime"))
+val bikeDataStop = bikeDataStart.withColumn("stoptime",dateToTimeStamp($"stoptime"))
+
+val joinedDFWithZip = bikeDataStop.withColumn("start station id",getZipWithID($"start station id"))
+val joinedDFWithZip1 = joinedDFWithZip.withColumn("end station id",getZipWithID($"end station id"))
+
 
 // create DF for departure stations with the distribution of final destinations
 
 def joinedDepartAndDuration = {
 
-	val departureDF = bikeDF3.select("starttime", "start station id", "end station id").groupBy("starttime", "start station id", "end station id").count()
+	val departureDF = joinedDFWithZip1.select("starttime", "start station id", "end station id").groupBy("starttime", "start station id", "end station id").count()
 
-	val durationDF = bikeDF3.select("starttime", "start station id", "end station id", "tripduration").groupBy("starttime", "start station id", "end station id").avg("tripduration")
+	val durationDF = joinedDFWithZip1.select("starttime", "start station id", "end station id", "tripduration").groupBy("starttime", "start station id", "end station id").avg("tripduration")
 	val durationInMin= durationDF.withColumn("avg(tripduration)",secToMinTime($"avg(tripduration)").alias("duration"))
 	val joinSeq = Seq("starttime", "start station id", "end station id")
 	val deptzips_duration= departureDF.join(durationInMin, joinSeq).orderBy($"starttime".asc, $"start station id".asc)
@@ -99,6 +111,18 @@ def joinedDepartAndDuration = {
 
 
 val joinedDF = joinedDepartAndDuration
+
+:require postgresql-42.2.8.jar
+val prop = new java.util.Properties
+prop.setProperty("driver", "org.postgresql.Driver")
+prop.setProperty("user", "power_user")
+prop.setProperty("password", "jason")
+
+val url = "jdbc:postgresql://10.0.0.9:5432/testing"
+val table = "t2"
+val table = "sample_data_table"
+
+joinedDFWithZip1.write.mode("overwrite").jdbc(url, "t2", prop)
 
 //departureDF.orderBy($"starttime".asc, $"start station id".asc).show()
 
@@ -129,16 +153,7 @@ val joinedDF = joinedDepartAndDuration
 // ageDF_depart2.orderBy($"starttime".asc, $"start station id".asc).show()
 
 
-//duration dataframe
 
-
-
-
-
-
-
-
-//joined age, duration and endstation count
 
 
 
