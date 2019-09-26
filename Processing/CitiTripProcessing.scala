@@ -115,8 +115,8 @@ val joinedDF = joinedDepartAndDuration
 :require postgresql-42.2.8.jar
 val prop = new java.util.Properties
 prop.setProperty("driver", "org.postgresql.Driver")
-prop.setProperty("user", "power_user")
-prop.setProperty("password", "jason")
+prop.setProperty("user", "")
+prop.setProperty("password", "")
 
 val url = "jdbc:postgresql://10.0.0.9:5432/testing"
 val table = "t2"
