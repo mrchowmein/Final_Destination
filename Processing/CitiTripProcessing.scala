@@ -118,6 +118,8 @@ def joinedDepartAndDuration = {
 
 val joinedDF = joinedDepartAndDuration
 
+
+
 :require postgresql-42.2.8.jar
 val prop = new java.util.Properties
 prop.setProperty("driver", "org.postgresql.Driver")
@@ -128,7 +130,7 @@ val url = "jdbc:postgresql://10.0.0.9:5432/testing"
 val table = "t2"
 
 
-joinedDFWithZip1.write.mode("overwrite").jdbc(url, table, prop)
+joinedDF.write.mode("overwrite").jdbc(url, table, prop)
 
 //departureDF.orderBy($"starttime".asc, $"start station id".asc).show()
 
