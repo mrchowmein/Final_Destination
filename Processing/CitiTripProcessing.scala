@@ -3,12 +3,10 @@ import java.lang.Math
 import org.apache.spark.sql.DataFrame
 
 
-
-
 val bikeDataPath = ("s3a://citibiketripdata/201907-citibike-tripdata.csv")
 
-
 //val dbCredPath: String = "hdfs://ec2-35-163-178-143.us-west-2.compute.amazonaws.com:9000/cred/dbCred.txt"
+
 
 
 
@@ -44,7 +42,6 @@ val bikeDataPath = ("s3a://citibiketripdata/201907-citibike-tripdata.csv")
 
 def loadCitiTripData (bikeDataPath : String): DataFrame =  { 
 
-
 	val schema = (new StructType).add("tripduration",DoubleType,true).add("starttime",StringType,true).add("stoptime",StringType,true).add("start station id",StringType,true).add("start station name",StringType,true).add("start station latitude",StringType,true).add("start station longitude",StringType,true).add("end station id",StringType,true).add("end station name",StringType,true).add("end station latitude",StringType,true).add("end station longitude",StringType,true).add("bikeid",StringType,true).add("usertype",StringType,true).add("birth year",IntegerType,true).add("gender",StringType,true)
 	val bikeData = spark.read.format("csv").option("header", "false").schema(schema).option("mode", "DROPMALFORMED").load(bikeDataPath)
 	bikeData
@@ -74,7 +71,6 @@ def createZipMap (zipTablePath : String) = {
 }
 
 val zipMap = createZipMap(zipPath)
-
 
 val getZipWithID = udf((startStion: String) => { 
 	
@@ -123,6 +119,7 @@ def joinedDepartAndDuration = {
 val joinedDF = joinedDepartAndDuration
 
 
+
 :require postgresql-42.2.8.jar
 val prop = new java.util.Properties
 prop.setProperty("driver", "org.postgresql.Driver")
@@ -134,7 +131,6 @@ val table = "t2"
 
 
 joinedDF.write.mode("overwrite").jdbc(url, table, prop)
-
 
 //departureDF.orderBy($"starttime".asc, $"start station id".asc).show()
 
