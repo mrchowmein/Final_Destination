@@ -95,6 +95,10 @@ val getZipWithID = udf((startStion: String) => {
 
 
 val bikeData = loadCitiTripData(bikeDataPath)
+
+sc.setCheckpointDir("hdfs://ec2-35-163-178-143.us-west-2.compute.amazonaws.com:9000/checkpoint")
+
+bikeData.checkpoint()
 val bikeDataStart = bikeData.withColumn("starttime",dateToTimeStamp($"starttime"))
 val bikeDataStop = bikeDataStart.withColumn("stoptime",dateToTimeStamp($"stoptime"))
 
@@ -117,7 +121,7 @@ def joinedDepartAndDuration = {
 
 
 val joinedDF = joinedDepartAndDuration
-
+joinedDF.show()
 
 
 :require postgresql-42.2.8.jar
@@ -126,7 +130,7 @@ prop.setProperty("driver", "org.postgresql.Driver")
 prop.setProperty("user", "")
 prop.setProperty("password", "")
 
-val url = "jdbc:postgresql://10.0.0.9:5432/testing"
+val url = "jdbc:postgresql://10.0.0.28:5432/testing"
 val table = "t2"
 
 
