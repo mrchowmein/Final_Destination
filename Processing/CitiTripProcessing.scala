@@ -3,7 +3,11 @@ import java.lang.Math
 import org.apache.spark.sql.DataFrame
 
 
-val bikeDataPath = ("s3a://citibiketripdata/201907-citibike-tripdata.csv")
+
+
+
+val bikeDataPath = ("s3a://citibiketripdata")
+
 
 //val dbCredPath: String = "hdfs://ec2-35-163-178-143.us-west-2.compute.amazonaws.com:9000/cred/dbCred.txt"
 
@@ -60,7 +64,7 @@ val dateToTimeStamp = udf((starttime: String) => {
 
 //geocoding
 
-val zipPath: String = "hdfs://ec2-35-163-178-143.us-west-2.compute.amazonaws.com:9000/zipcode_tables/stationZip.csv"
+val zipPath: String = "hdfs://ec2-100-20-139-9.us-west-2.compute.amazonaws.com:9000/zipcode_tables/stationZip.csv"
 
 def createZipMap (zipTablePath : String) = {
 	val zipTable = sc.textFile(zipTablePath)
@@ -96,9 +100,9 @@ val getZipWithID = udf((startStion: String) => {
 
 val bikeData = loadCitiTripData(bikeDataPath)
 
-sc.setCheckpointDir("hdfs://ec2-35-163-178-143.us-west-2.compute.amazonaws.com:9000/checkpoint")
+//sc.setCheckpointDir("hdfs://ec2-100-20-139-9.us-west-2.compute.amazonaws.com:9000/checkpoint")
 
-bikeData.checkpoint()
+
 val bikeDataStart = bikeData.withColumn("starttime",dateToTimeStamp($"starttime"))
 val bikeDataStop = bikeDataStart.withColumn("stoptime",dateToTimeStamp($"stoptime"))
 
@@ -115,13 +119,13 @@ def joinedDepartAndDuration = {
 	val durationDF = joinedDFWithZip1.select("starttime", "start station id", "end station id", "tripduration").groupBy("starttime", "start station id", "end station id").avg("tripduration")
 	val durationInMin= durationDF.withColumn("avg(tripduration)",secToMinTime($"avg(tripduration)").alias("duration"))
 	val joinSeq = Seq("starttime", "start station id", "end station id")
-	val deptzips_duration= departureDF.join(durationInMin, joinSeq).orderBy($"starttime".asc, $"start station id".asc)
+	val deptzips_duration= departureDF.join(durationInMin, joinSeq).orderBy($"starttime".desc, $"start station id".desc)
 	deptzips_duration
 }
 
 
 val joinedDF = joinedDepartAndDuration
-joinedDF.show()
+
 
 
 :require postgresql-42.2.8.jar
