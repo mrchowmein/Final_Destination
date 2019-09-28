@@ -96,9 +96,9 @@ val getZipWithID = udf((startStion: String) => {
 
 val bikeData = loadCitiTripData(bikeDataPath)
 
-sc.setCheckpointDir("hdfs://ec2-35-163-178-143.us-west-2.compute.amazonaws.com:9000/checkpoint")
+// sc.setCheckpointDir("hdfs://ec2-35-163-178-143.us-west-2.compute.amazonaws.com:9000/checkpoint")
 
-bikeData.checkpoint()
+// bikeData.checkpoint()
 val bikeDataStart = bikeData.withColumn("starttime",dateToTimeStamp($"starttime"))
 val bikeDataStop = bikeDataStart.withColumn("stoptime",dateToTimeStamp($"stoptime"))
 
