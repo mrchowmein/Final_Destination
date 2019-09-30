@@ -1,9 +1,11 @@
 import org.apache.spark.sql.types._
 import java.lang.Math
 import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.SaveMode
+import org.apache.spark.sql.functions.count
 
 
-val bikeDataPath = ("s3a://citibiketripdata/201907-citibike-tripdata.csv")
+val bikeDataPath = ("s3a://citibiketripdata/")
 
 //val dbCredPath: String = "hdfs://ec2-35-163-178-143.us-west-2.compute.amazonaws.com:9000/cred/dbCred.txt"
 
@@ -60,7 +62,7 @@ val dateToTimeStamp = udf((starttime: String) => {
 
 //geocoding
 
-val zipPath: String = "hdfs://ec2-35-163-178-143.us-west-2.compute.amazonaws.com:9000/zipcode_tables/stationZip.csv"
+val zipPath: String = "hdfs://ec2-54-68-153-54.us-west-2.compute.amazonaws.com:9000/zipcode_tables/stationZip.csv"
 
 def createZipMap (zipTablePath : String) = {
 	val zipTable = sc.textFile(zipTablePath)
@@ -108,14 +110,20 @@ val joinedDFWithZip1 = joinedDFWithZip.withColumn("end station id",getZipWithID(
 
 // create DF for departure stations with the distribution of final destinations
 
-def joinedDepartAndDuration = {
 
+
+def joinedDepartAndDuration = {
+	
 	val departureDF = joinedDFWithZip1.select("starttime", "start station id", "end station id").groupBy("starttime", "start station id", "end station id").count()
+	val subCountDF = joinedDFWithZip1.select("starttime", "start station id", "end station id", "usertype").filter($"usertype" === "Subscriber").groupBy("starttime", "start station id", "end station id").count().withColumnRenamed("count","sub_count")
+	val joinSeq = Seq("starttime", "start station id", "end station id")
+	val depart_SubDF = departureDF.join(subCountDF, joinSeq)
+	val departSubRatioDF = depatwithSub.withColumn("sub_percent", $"sub_count" / $"count").orderBy($"starttime".desc, $"start station id".desc)
 
 	val durationDF = joinedDFWithZip1.select("starttime", "start station id", "end station id", "tripduration").groupBy("starttime", "start station id", "end station id").avg("tripduration")
 	val durationInMin= durationDF.withColumn("avg(tripduration)",secToMinTime($"avg(tripduration)").alias("duration"))
-	val joinSeq = Seq("starttime", "start station id", "end station id")
-	val deptzips_duration= departureDF.join(durationInMin, joinSeq).orderBy($"starttime".asc, $"start station id".asc)
+	
+	val deptzips_duration= departSubRatioDF.join(durationInMin, joinSeq).orderBy($"starttime".asc, $"start station id".asc)
 	deptzips_duration
 }
 
