@@ -3,6 +3,7 @@ import java.lang.Math
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.SaveMode
 import org.apache.spark.sql.functions.count
+import org.apache.spark.sql.catalyst.catalog.BucketSpec
 
 
 val bikeDataPath = ("s3a://citibiketripdata/")
