@@ -131,7 +131,7 @@ def joinedDepartAndDuration = {
 	val departureDF = joinedDFWithZip1.select("starttime", "start station id", "end station id").groupBy("starttime", "start station id", "end station id").count()
 	val subCountDF = joinedDFWithZip1.select("starttime", "start station id", "end station id", "usertype").filter($"usertype" === "Subscriber").groupBy("starttime", "start station id", "end station id").count().withColumnRenamed("count","sub_count")
 	val joinSeq = Seq("starttime", "start station id", "end station id")
-	val depart_SubDF = departureDF.join(subCountDF, joinSeq)
+	val depatwithSub = departureDF.join(subCountDF, joinSeq)
 	val departSubRatioDF = depatwithSub.withColumn("sub_percent", $"sub_count" / $"count").orderBy($"starttime".desc, $"start station id".desc)
 
 	val durationDF = joinedDFWithZip1.select("starttime", "start station id", "end station id", "tripduration").groupBy("starttime", "start station id", "end station id").avg("tripduration")
