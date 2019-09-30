@@ -57,7 +57,21 @@ val secToMinTime = udf((time_in_sec: Double) => {
 })
 
 val dateToTimeStamp = udf((starttime: String) => { 
-	starttime.split(':')(0)
+	val dateHour = starttime.split(':')(0)
+
+	if(dateHour.contains("/")){
+		var oldDate = dateHour.split("[/, ]")
+		if(oldDate(0).length < 2 && oldDate(0).length!=0){
+			oldDate(0) = "0"+oldDate(0)
+		}
+		if(oldDate(1).length < 2 && oldDate(1).length!=0){
+			oldDate(1) = "0"+oldDate(1)
+		}
+		val newDate = oldDate(2)+"-"+oldDate(0)+"-"+oldDate(1)+" "+oldDate(3)
+		newDate
+	} else {
+		dateHour
+	}
 })
 
 //geocoding
