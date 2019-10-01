@@ -1,6 +1,7 @@
 import org.apache.spark.sql.types._
 import java.lang.Math
 import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.Dataset
 import org.apache.spark.sql.SaveMode
 import org.apache.spark.sql.functions.count
 import org.apache.spark.sql.catalyst.catalog.BucketSpec
@@ -58,7 +59,7 @@ root
 
 
 
-val yellowDF = spark.read.format("csv").option("header", "true").option("mode", "DROPMALFORMED").load(yellowDataPath)
+//val yellowDF = spark.read.format("csv").option("header", "true").option("mode", "DROPMALFORMED").load(yellowDataPath)
 val yellowDF = spark.read.format("csv").option("header", "true").load(yellowDataPath)
 
 val dateToTimeStamp = udf((starttime: String) => { 
@@ -104,6 +105,19 @@ val toDouble = udf((numString: String) => {
 	doubleNum
 	
 })
+
+val getHour = udf((starttime: String) => { 
+	val hour = starttime.split(' ')(1)
+
+	hour
+})
+
+val getDate = udf((starttime: String) => { 
+	val date = starttime.split(' ')(0)
+
+	date
+})
+
 val taxiStartTime = yellowDF.withColumn("tpep_pickup_datetime",dateToTimeStamp($"tpep_pickup_datetime"))
 val taxiWithZips = taxiStartTime.withColumn("PULocationID",getZipWithID($"PULocationID")).withColumn("DOLocationID",getZipWithID($"DOLocationID")).filter($"trip_distance" !== ".00").withColumn("trip_distance",toDouble($"trip_distance"))
 
@@ -112,7 +126,7 @@ val departureDF = taxiWithZips.select("tpep_pickup_datetime", "PULocationID", "D
 val creditCardCount = taxiWithZips.select("tpep_pickup_datetime", "PULocationID", "DOLocationID", "payment_type").filter($"payment_type" === "1").groupBy("tpep_pickup_datetime", "PULocationID", "DOLocationID").count().withColumnRenamed("count","cc_count")
 val joinSeq = Seq("tpep_pickup_datetime", "PULocationID", "DOLocationID")
 val departWithCC = departureDF.join(creditCardCount, joinSeq)
-val departwithCCPercent = departWithCC.withColumn("cc_percent", $"cc_count" / $"count").orderBy($"tpep_pickup_datetime".desc, $"PULocationID".desc)
+val departwithCCPercent = departWithCC.withColumn("cc_percent", $"cc_count" / $"count").withColumn("hour",getHour($"tpep_pickup_datetime")).withColumn("date", getDate($"tpep_pickup_datetime"))
 
 val distanceDF = taxiWithZips.select("tpep_pickup_datetime", "PULocationID", "PULocationID", "trip_distance").groupBy("tpep_pickup_datetime", "PULocationID", "PULocationID").avg("trip_distance")
 val departCCDistDF= departwithCCPercent.join(taxiWithZips, joinSeq).orderBy($"tpep_pickup_datetime".asc, $"PULocationID".asc)
@@ -124,7 +138,7 @@ prop.setProperty("driver", "org.postgresql.Driver")
 prop.setProperty("user", "")
 prop.setProperty("password", "")
 
-val url = "jdbc:postgresql://10.0.0.28:5432/testing"
+val url = "jdbc:postgresql://10.0.0.12:5432/testing"
 val table = "taxi_table"
 
 departCCDistDF.write.mode("Overwrite").jdbc(url, table, prop)
