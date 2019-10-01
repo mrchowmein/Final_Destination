@@ -1,6 +1,7 @@
 import org.apache.spark.sql.types._
 import java.lang.Math
 import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.Dataset
 import org.apache.spark.sql.SaveMode
 import org.apache.spark.sql.functions.count
 import org.apache.spark.sql.catalyst.catalog.BucketSpec
@@ -164,18 +165,18 @@ def joinedDepartAndDuration = {
 val joinedDF = joinedDepartAndDuration
 joinedDF.show()
 
-
 :require postgresql-42.2.8.jar
 val prop = new java.util.Properties
 prop.setProperty("driver", "org.postgresql.Driver")
 prop.setProperty("user", "")
 prop.setProperty("password", "")
 
-val url = "jdbc:postgresql://10.0.0.28:5432/testing"
-val table = "t2"
+val url = "jdbc:postgresql://10.0.0.12:5432/testing"
+val table = "citi_table2"
 
 
 joinedDF.write.mode("Overwrite").jdbc(url, table, prop)
+
 
 //departureDF.orderBy($"starttime".asc, $"start station id".asc).show()
 
