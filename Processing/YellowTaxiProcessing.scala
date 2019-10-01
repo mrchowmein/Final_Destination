@@ -3,11 +3,11 @@ import java.lang.Math
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.Dataset
 import org.apache.spark.sql.SaveMode
-import org.apache.spark.sql.functions.count
+import org.apache.spark.sql.functions._
 import org.apache.spark.sql.catalyst.catalog.BucketSpec
 
 
-val yellowDataPath = ("s3a://nycyellowgreentaxitrip/trip data/yellowtaxi/yellow_tripdata_2016-07.csv")
+val yellowDataPath = ("s3a://nycyellowgreentaxitrip/trip data/yellowtaxi/")
 //val schemaTaxi = (new StructType).add("VendorID",StringType,true).add("tpep_pickup_datetime",StringType,true).add("tpep_dropoff_datetime",StringType,true).add("passenger_count",StringType,true).add("trip_distance",StringType,true).add("RatecodeID",StringType,true).add("store_and_fwd_flag",StringType,true).add("PULocationID",StringType,true).add("DOLocationID",StringType,true).add("payment_type",StringType,true).add("fare_amount",StringType,true).add("bikeid",StringType,true).add("extra",StringType,true).add("mta_tax",StringType,true).add("tip_amount",StringType,true).add("tolls_amount",StringType,true).add("improvement_surcharge",StringType,true).add("total_amount",StringType,true).add("congestion_surcharge",StringType,true)
 
 /*
@@ -128,8 +128,8 @@ val joinSeq = Seq("tpep_pickup_datetime", "PULocationID", "DOLocationID")
 val departWithCC = departureDF.join(creditCardCount, joinSeq)
 val departwithCCPercent = departWithCC.withColumn("cc_percent", $"cc_count" / $"count").withColumn("hour",getHour($"tpep_pickup_datetime")).withColumn("date", getDate($"tpep_pickup_datetime"))
 
-val distanceDF = taxiWithZips.select("tpep_pickup_datetime", "PULocationID", "PULocationID", "trip_distance").groupBy("tpep_pickup_datetime", "PULocationID", "PULocationID").avg("trip_distance")
-val departCCDistDF= departwithCCPercent.join(taxiWithZips, joinSeq).orderBy($"tpep_pickup_datetime".asc, $"PULocationID".asc)
+val distanceDF = taxiWithZips.select("tpep_pickup_datetime", "PULocationID", "DOLocationID", "trip_distance").groupBy("tpep_pickup_datetime", "PULocationID", "DOLocationID").avg("trip_distance")
+val departCCDistDF= departwithCCPercent.join(distanceDF, joinSeq)
 departCCDistDF.show()
 
 :require postgresql-42.2.8.jar
@@ -139,6 +139,6 @@ prop.setProperty("user", "")
 prop.setProperty("password", "")
 
 val url = "jdbc:postgresql://10.0.0.12:5432/testing"
-val table = "taxi_table"
+val table = "yellow_taxi_table"
 
 departCCDistDF.write.mode("Overwrite").jdbc(url, table, prop)
