@@ -166,7 +166,7 @@ def joinedDepartAndDuration = {
 val joinedDF = joinedDepartAndDuration
 
 
-:require postgresql-42.2.8.jar
+//:require postgresql-42.2.8.jar
 val prop = new java.util.Properties
 prop.setProperty("driver", "org.postgresql.Driver")
 prop.setProperty("user", args(0))
