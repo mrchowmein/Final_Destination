@@ -8,8 +8,11 @@ import org.apache.spark.sql.catalyst.catalog.BucketSpec
 
 
 val yellowDataPath = ("s3a://nycyellowgreentaxitrip/trip data/yellowtaxi/")
+val args = sc.getConf.get("spark.driver.args").split("\\s+")
 //val schemaTaxi = (new StructType).add("VendorID",StringType,true).add("tpep_pickup_datetime",StringType,true).add("tpep_dropoff_datetime",StringType,true).add("passenger_count",StringType,true).add("trip_distance",StringType,true).add("RatecodeID",StringType,true).add("store_and_fwd_flag",StringType,true).add("PULocationID",StringType,true).add("DOLocationID",StringType,true).add("payment_type",StringType,true).add("fare_amount",StringType,true).add("bikeid",StringType,true).add("extra",StringType,true).add("mta_tax",StringType,true).add("tip_amount",StringType,true).add("tolls_amount",StringType,true).add("improvement_surcharge",StringType,true).add("total_amount",StringType,true).add("congestion_surcharge",StringType,true)
 
+println(args(0))
+println(args(1))
 /*
 
 root
@@ -130,13 +133,13 @@ val departwithCCPercent = departWithCC.withColumn("cc_percent", $"cc_count" / $"
 
 val distanceDF = taxiWithZips.select("tpep_pickup_datetime", "PULocationID", "DOLocationID", "trip_distance").groupBy("tpep_pickup_datetime", "PULocationID", "DOLocationID").avg("trip_distance")
 val departCCDistDF= departwithCCPercent.join(distanceDF, joinSeq)
-departCCDistDF.show()
+//departCCDistDF.show()
 
-:require postgresql-42.2.8.jar
+//:require postgresql-42.2.8.jar
 val prop = new java.util.Properties
 prop.setProperty("driver", "org.postgresql.Driver")
-prop.setProperty("user", "")
-prop.setProperty("password", "")
+prop.setProperty("user", args(0))
+prop.setProperty("password", args(1))
 
 val url = "jdbc:postgresql://10.0.0.12:5432/testing"
 val table = "yellow_taxi_table2"
