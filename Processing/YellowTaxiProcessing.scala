@@ -139,6 +139,6 @@ prop.setProperty("user", "")
 prop.setProperty("password", "")
 
 val url = "jdbc:postgresql://10.0.0.12:5432/testing"
-val table = "yellow_taxi_table"
+val table = "yellow_taxi_table2"
 
 departCCDistDF.write.mode("Overwrite").jdbc(url, table, prop)
