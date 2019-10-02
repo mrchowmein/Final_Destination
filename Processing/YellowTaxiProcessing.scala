@@ -11,8 +11,7 @@ val yellowDataPath = ("s3a://nycyellowgreentaxitrip/trip data/yellowtaxi/")
 val args = sc.getConf.get("spark.driver.args").split("\\s+")
 //val schemaTaxi = (new StructType).add("VendorID",StringType,true).add("tpep_pickup_datetime",StringType,true).add("tpep_dropoff_datetime",StringType,true).add("passenger_count",StringType,true).add("trip_distance",StringType,true).add("RatecodeID",StringType,true).add("store_and_fwd_flag",StringType,true).add("PULocationID",StringType,true).add("DOLocationID",StringType,true).add("payment_type",StringType,true).add("fare_amount",StringType,true).add("bikeid",StringType,true).add("extra",StringType,true).add("mta_tax",StringType,true).add("tip_amount",StringType,true).add("tolls_amount",StringType,true).add("improvement_surcharge",StringType,true).add("total_amount",StringType,true).add("congestion_surcharge",StringType,true)
 
-println(args(0))
-println(args(1))
+
 /*
 
 root

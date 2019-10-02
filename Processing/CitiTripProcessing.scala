@@ -8,8 +8,9 @@ import org.apache.spark.sql.catalyst.catalog.BucketSpec
 
 
 val bikeDataPath = ("s3a://citibiketripdata/")
+val args = sc.getConf.get("spark.driver.args").split("\\s+")
 
-//val dbCredPath: String = "hdfs://ec2-35-163-178-143.us-west-2.compute.amazonaws.com:9000/cred/dbCred.txt"
+
 
 
 
@@ -157,57 +158,25 @@ def joinedDepartAndDuration = {
 	val durationDF = joinedDFWithZip1.select("starttime","start station id", "end station id", "tripduration").groupBy("starttime","start station id", "end station id").avg("tripduration")
 	val durationInMin= durationDF.withColumn("avg(tripduration)",secToMinTime($"avg(tripduration)").alias("duration"))
 	
-	val deptzips_duration= departSubRatioDF.join(durationInMin, joinSeq).orderBy($"starttime".asc, $"start station id".asc)
+	val deptzips_duration= departSubRatioDF.join(durationInMin, joinSeq)
 	deptzips_duration
 }
 
 
 val joinedDF = joinedDepartAndDuration
-joinedDF.show()
+
 
 :require postgresql-42.2.8.jar
 val prop = new java.util.Properties
 prop.setProperty("driver", "org.postgresql.Driver")
-prop.setProperty("user", "")
-prop.setProperty("password", "")
+prop.setProperty("user", args(0))
+prop.setProperty("password", args(1))
 
 val url = "jdbc:postgresql://10.0.0.12:5432/testing"
 val table = "citi_table2"
 
 
 joinedDF.write.mode("Overwrite").jdbc(url, table, prop)
-
-
-//departureDF.orderBy($"starttime".asc, $"start station id".asc).show()
-
-// // create DF for arrival stations with the distribution of start destinations
-// val arrivalDF = bikeDF3.select("starttime", "end station id", "start station id").groupBy("starttime", "end station id", "start station id").count()
-// arrivalDF.orderBy($"starttime".asc, $"end station id".asc).show()
-
-
-
-// create DF for depart stations with the distribution of age
-// val ageDF_depart = bikeDF3.select("starttime", "start station id", "end station id", "birth year").groupBy("starttime", "start station id", "end station id").avg("birth year")
-
-// //ageDF.orderBy($"starttime".asc, $"start station id".asc).show()
-
-// // create DF for arrival stations with the distribution of age
-// val ageDF_arrival = bikeDF3.select("starttime", "end station id", "start station id", "birth year").groupBy("starttime", "end station id", "start station id").avg("birth year")
-// ageDF_arrival.orderBy($"starttime".asc, $"end station id".asc).show()
-
-// val yearToAge = udf((yearInt: Integer) => { 
-// 	val age = 2019-yearInt
-// 	age
-// })
-
-//calcuated age df
-// val ageDF_arrival2 = ageDF_arrival.withColumn("avg(birth year)",yearToAge($"avg(birth year)").alias("age"))
-
-// val ageDF_depart2 = ageDF_depart.withColumn("avg(birth year)",yearToAge($"avg(birth year)").alias("age"))
-// ageDF_depart2.orderBy($"starttime".asc, $"start station id".asc).show()
-
-
-
 
 
 
