@@ -96,9 +96,12 @@ val getZipWithIDTaxi = udf((startStion: String) => {
 })
 
 val getHour = udf((starttime: String) => { 
-	val hour = starttime.split(' ')(1)
-
-	hour
+	if(starttime.split(' ').length > 1){
+		val hour = starttime.split(' ')(1)
+		hour
+	}
+	
+	starttime
 })
 
 val getDate = udf((starttime: String) => { 
@@ -148,10 +151,12 @@ val processedBikeDF = joinedDepartAndDuration.withColumnRenamed("start station i
 
 
 val yellowDataPath = ("s3a://nycyellowgreentaxitrip/trip data/yellowtaxi/")
-val yellowDF = spark.read.format("csv").option("header", "true").load(yellowDataPath)
+val yellowDF = spark.read.format("csv").option("header", "true").option("mode", "DROPMALFORMED").load(yellowDataPath)
 
-val dateToTimeStamp = udf((starttime: String) => { 
-	starttime.split(':')(0)
+val dateToTimeStamp = udf((pickupTime: String) => {
+	if(pickupTime.contains(":")){
+		starttime.split(':')(0)
+	}
 })
 
 val zipPathTaxi: String = "hdfs://ec2-54-68-153-54.us-west-2.compute.amazonaws.com:9000/zipcode_tables/taxiZoneZips.csv"
