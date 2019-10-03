@@ -27,7 +27,7 @@ val secToMinTime = udf((time_in_sec: Double) => {
 	min
 })
 
-val dateToTimeStamp = udf((starttime: String) => { 
+val dateToTimeStampBike = udf((starttime: String) => { 
 	val dateHour = starttime.split(':')(0)
 
 	if(dateHour.contains("/")){
@@ -103,7 +103,7 @@ val bikeData = loadCitiTripData(bikeDataPath)
 // sc.setCheckpointDir("hdfs://ec2-35-163-178-143.us-west-2.compute.amazonaws.com:9000/checkpoint")
 
 // bikeData.checkpoint()
-val bikeDataStart = bikeData.withColumn("starttime",dateToTimeStamp($"starttime"))
+val bikeDataStart = bikeData.withColumn("starttime",dateToTimeStampBike($"starttime"))
 //val bikeDataDateHour = bikeDataStart.withColumn("hour",getHour($"starttime"))
 
 val joinedDFWithZip = bikeDataStart.withColumn("start station id",getZipWithID($"start station id"))
@@ -146,10 +146,10 @@ val dateToTimeStamp = udf((starttime: String) => {
 })
 
 
-val zipPath: String = "hdfs://ec2-54-68-153-54.us-west-2.compute.amazonaws.com:9000/zipcode_tables/taxiZoneZips.csv"
+val zipPathTaxi: String = "hdfs://ec2-54-68-153-54.us-west-2.compute.amazonaws.com:9000/zipcode_tables/taxiZoneZips.csv"
 
 
-val zipMap = createZipMap(zipPath)
+val zipMapTaxi = createZipMap(zipPathTaxi)
 
 
 val toDouble = udf((numString: String) => { 
@@ -161,18 +161,18 @@ val toDouble = udf((numString: String) => {
 
 
 
-val taxiStartTime = yellowDF.withColumn("tpep_pickup_datetime",dateToTimeStamp($"tpep_pickup_datetime"))
-val taxiWithZips = taxiStartTime.withColumn("PULocationID",getZipWithID($"PULocationID")).withColumn("DOLocationID",getZipWithID($"DOLocationID")).filter($"trip_distance" !== ".00").withColumn("trip_distance",toDouble($"trip_distance"))
+val taxiStartTimeYellow = yellowDF.withColumn("tpep_pickup_datetime",dateToTimeStamp($"tpep_pickup_datetime"))
+val taxiWithZipsYellow = taxiStartTimeYellow.withColumn("PULocationID",getZipWithID($"PULocationID")).withColumn("DOLocationID",getZipWithID($"DOLocationID")).filter($"trip_distance" !== ".00").withColumn("trip_distance",toDouble($"trip_distance"))
 
 
-val departureDF = taxiWithZips.select("tpep_pickup_datetime", "PULocationID", "DOLocationID").groupBy("tpep_pickup_datetime", "PULocationID", "DOLocationID").count()
-val creditCardCount = taxiWithZips.select("tpep_pickup_datetime", "PULocationID", "DOLocationID", "payment_type").filter($"payment_type" === "1").groupBy("tpep_pickup_datetime", "PULocationID", "DOLocationID").count().withColumnRenamed("count","cc_count")
-val joinSeq = Seq("tpep_pickup_datetime", "PULocationID", "DOLocationID")
-val departWithCC = departureDF.join(creditCardCount, joinSeq)
-val departwithCCPercent = departWithCC.withColumn("cc_percent", $"cc_count" / $"count").withColumn("hour",getHour($"tpep_pickup_datetime")).withColumn("date", getDate($"tpep_pickup_datetime"))
+val departureDFYellow = taxiWithZipsYellow.select("tpep_pickup_datetime", "PULocationID", "DOLocationID").groupBy("tpep_pickup_datetime", "PULocationID", "DOLocationID").count()
+val creditCardCountYellow = taxiWithZipsYellow.select("tpep_pickup_datetime", "PULocationID", "DOLocationID", "payment_type").filter($"payment_type" === "1").groupBy("tpep_pickup_datetime", "PULocationID", "DOLocationID").count().withColumnRenamed("count","cc_count")
+val joinSeqYellow = Seq("tpep_pickup_datetime", "PULocationID", "DOLocationID")
+val departWithCCYellow = departureDFYellow.join(creditCardCountYellow, joinSeq)
+val departwithCCPercentYellow = departWithCCYellow.withColumn("cc_percent", $"cc_count" / $"count").withColumn("hour",getHour($"tpep_pickup_datetime")).withColumn("date", getDate($"tpep_pickup_datetime"))
 
-val distanceDF = taxiWithZips.select("tpep_pickup_datetime", "PULocationID", "DOLocationID", "trip_distance").groupBy("tpep_pickup_datetime", "PULocationID", "DOLocationID").avg("trip_distance")
-val procssedyellowDF = departwithCCPercent.join(distanceDF, joinSeq).withColumnRenamed("PULocationID", "start_zip").withColumnRenamed("DOLocationID", "end_zip")
+val distanceDFYellow = taxiWithZipsYellow.select("tpep_pickup_datetime", "PULocationID", "DOLocationID", "trip_distance").groupBy("tpep_pickup_datetime", "PULocationID", "DOLocationID").avg("trip_distance")
+val procssedyellowDF = departwithCCPercentYellow.join(distanceDFYellow, joinSeq).withColumnRenamed("PULocationID", "start_zip").withColumnRenamed("DOLocationID", "end_zip")
 //departCCDistDF.show()
 
 
@@ -182,27 +182,27 @@ val greenDataPath = ("s3a://nycyellowgreentaxitrip/trip data/greentaxi/")
 val greenDF = spark.read.format("csv").option("header", "true").option("mode", "DROPMALFORMED")load(greenDataPath)
 
 
-val taxiStartTime = greenDF.withColumn("lpep_pickup_datetime",dateToTimeStamp($"lpep_pickup_datetime"))
-val taxiWithZips = taxiStartTime.withColumn("PULocationID",getZipWithID($"PULocationID")).withColumn("DOLocationID",getZipWithID($"DOLocationID")).filter($"trip_distance" !== ".00").withColumn("trip_distance",toDouble($"trip_distance"))
+val taxiStartTimeGreen = greenDF.withColumn("lpep_pickup_datetime",dateToTimeStamp($"lpep_pickup_datetime"))
+val taxiWithZipsGreen = taxiStartTimeGreen.withColumn("PULocationID",getZipWithID($"PULocationID")).withColumn("DOLocationID",getZipWithID($"DOLocationID")).filter($"trip_distance" !== ".00").withColumn("trip_distance",toDouble($"trip_distance"))
 
 // sc.setCheckpointDir("hdfs://ec2-54-68-153-54.us-west-2.compute.amazonaws.com:9000/checkpoint")
 // taxiWithZips.checkpoint()
 
-val departureDF = taxiWithZips.select("lpep_pickup_datetime", "PULocationID", "DOLocationID").groupBy("lpep_pickup_datetime", "PULocationID", "DOLocationID").count()
+val departureDFGreen = taxiWithZipsGreen.select("lpep_pickup_datetime", "PULocationID", "DOLocationID").groupBy("lpep_pickup_datetime", "PULocationID", "DOLocationID").count()
 // departureDF.checkpoint()
 
-val creditCardCount = taxiWithZips.select("lpep_pickup_datetime", "PULocationID", "DOLocationID", "payment_type").filter($"payment_type" === "1").groupBy("lpep_pickup_datetime", "PULocationID", "DOLocationID").count().withColumnRenamed("count","cc_count")
-val joinSeq = Seq("lpep_pickup_datetime", "PULocationID", "DOLocationID")
-val departWithCC = departureDF.join(creditCardCount, joinSeq)
-val departwithCCPercent = departWithCC.withColumn("cc_percent", $"cc_count" / $"count").withColumn("hour",getHour($"lpep_pickup_datetime")).withColumn("date", getDate($"lpep_pickup_datetime"))
+val creditCardCountGreen = taxiWithZipsGreen.select("lpep_pickup_datetime", "PULocationID", "DOLocationID", "payment_type").filter($"payment_type" === "1").groupBy("lpep_pickup_datetime", "PULocationID", "DOLocationID").count().withColumnRenamed("count","cc_count")
+val joinSeqGreen = Seq("lpep_pickup_datetime", "PULocationID", "DOLocationID")
+val departWithCCGreen = departureDFGreen.join(creditCardCount, joinSeq)
+val departwithCCPercentGreen = departWithCCGreen.withColumn("cc_percent", $"cc_count" / $"count").withColumn("hour",getHour($"lpep_pickup_datetime")).withColumn("date", getDate($"lpep_pickup_datetime"))
 
-val dispatchedCount = taxiWithZips.select("lpep_pickup_datetime", "PULocationID", "DOLocationID", "trip_type").groupBy("lpep_pickup_datetime", "PULocationID", "DOLocationID").count().withColumnRenamed("count","dispatch_count")
-val dispatchwithDepart = departureDF.join(dispatchedCount, joinSeq)
+val dispatchedCountGreen = taxiWithZipsGreen.select("lpep_pickup_datetime", "PULocationID", "DOLocationID", "trip_type").groupBy("lpep_pickup_datetime", "PULocationID", "DOLocationID").count().withColumnRenamed("count","dispatch_count")
+val dispatchwithDepartGreen = departureDFGreen.join(dispatchedCount, joinSeq)
 
-val dispatch_percent = dispatchwithDepart.withColumn("dispatch_percent", $"dispatch_count" / $"count").drop("count")
+val dispatch_percentGreen = dispatchwithDepartGreen.withColumn("dispatch_percent", $"dispatch_count" / $"count").drop("count")
 
-val distanceDF = taxiWithZips.select("lpep_pickup_datetime", "PULocationID", "DOLocationID", "trip_distance").groupBy("lpep_pickup_datetime", "PULocationID", "DOLocationID").avg("trip_distance")
-val processedGreenDF = departwithCCPercent.join(distanceDF, joinSeq).join(dispatch_percent, joinSeq).withColumnRenamed("PULocationID", "start_zip").withColumnRenamed("DOLocationID", "end_zip")
+val distanceDFGreen = taxiWithZipsGreen.select("lpep_pickup_datetime", "PULocationID", "DOLocationID", "trip_distance").groupBy("lpep_pickup_datetime", "PULocationID", "DOLocationID").avg("trip_distance")
+val processedGreenDF = departwithCCPercentGreen.join(distanceDFGreen, joinSeq).join(dispatch_percentGreen, joinSeq).withColumnRenamed("PULocationID", "start_zip").withColumnRenamed("DOLocationID", "end_zip")
 
 
 val joinSeq = Seq("date", "hour", "start_zip", "end_zip")
