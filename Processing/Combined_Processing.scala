@@ -100,13 +100,14 @@ val getHour = udf((starttime: String) => {
 		val hour = starttime.split(' ')(1)
 		hour
 	} else {
-		starttime
+		val hour = "-1"
+		hour
 	}
 	
 })
 
 val getDate = udf((starttime: String) => { 
-	val date = starttime.split(' ')(0)
+	if (starttime.containsval date = starttime.split(' ')(0)
 
 	date
 })

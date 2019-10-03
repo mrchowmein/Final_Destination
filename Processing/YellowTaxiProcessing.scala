@@ -131,7 +131,7 @@ val departWithCC = departureDF.join(creditCardCount, joinSeq)
 val departwithCCPercent = departWithCC.withColumn("cc_percent", $"cc_count" / $"count").withColumn("hour",getHour($"tpep_pickup_datetime")).withColumn("date", getDate($"tpep_pickup_datetime"))
 
 val distanceDF = taxiWithZips.select("tpep_pickup_datetime", "PULocationID", "DOLocationID", "trip_distance").groupBy("tpep_pickup_datetime", "PULocationID", "DOLocationID").avg("trip_distance")
-val departCCDistDF= departwithCCPercent.join(distanceDF, joinSeq)
+val departCCDistDF= departwithCCPercent.join(distanceDF, joinSeq).withColumnRenamed("cc_percent", "yellow_cc_percent").drop("cc_count").withColumnRenamed("avg(trip_distance)", "yellow_avg_dist").withColumnRenamed("count", "yellow_count")
 //departCCDistDF.show()
 
 //:require postgresql-42.2.8.jar
