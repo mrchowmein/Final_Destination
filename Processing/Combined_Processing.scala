@@ -165,7 +165,7 @@ val toDouble = udf((numString: String) => {
 })
 
 val taxiStartTimeYellow = yellowDF.withColumn("tpep_pickup_datetime",dateToTimeStamp($"tpep_pickup_datetime"))
-val taxiWithZipsYellow = taxiStartTimeYellow.withColumn("PULocationID",getZipWithIDTaxi($"PULocationID")).withColumn("DOLocationID",getZipWithID($"DOLocationID")).filter($"trip_distance" !== ".00").withColumn("trip_distance",toDouble($"trip_distance"))
+val taxiWithZipsYellow = taxiStartTimeYellow.withColumn("PULocationID",getZipWithIDTaxi($"PULocationID")).withColumn("DOLocationID",getZipWithIDTaxi($"DOLocationID")).filter($"trip_distance" !== ".00").withColumn("trip_distance",toDouble($"trip_distance"))
 
 
 val departureDFYellow = taxiWithZipsYellow.select("tpep_pickup_datetime", "PULocationID", "DOLocationID").groupBy("tpep_pickup_datetime", "PULocationID", "DOLocationID").count()
