@@ -137,7 +137,7 @@ val distanceDF = taxiWithZips.select("lpep_pickup_datetime", "PULocationID", "DO
 val departCCDistDF= departwithCCPercent.join(distanceDF, joinSeq).join(dispatch_percent, joinSeq).withColumnRenamed("cc_percent", "green_cc_percent").drop("cc_count").withColumnRenamed("avg(trip_distance)", "green_avg_dist").withColumnRenamed("count", "green_count")
 //departCCDistDF.collect()
 
-:require postgresql-42.2.8.jar
+//:require postgresql-42.2.8.jar
 val prop = new java.util.Properties
 prop.setProperty("driver", "org.postgresql.Driver")
 prop.setProperty("user", args(0))
