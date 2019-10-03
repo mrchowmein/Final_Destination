@@ -209,11 +209,11 @@ val joinSeq = Seq("date", "hour", "start_zip", "end_zip")
 val combinedDFs = procssedyellowDF.join(processedBikeDF, joinSeq).join(processedGreenDF, joinSeq)
 
 
-:require postgresql-42.2.8.jar
+
 val prop = new java.util.Properties
 prop.setProperty("driver", "org.postgresql.Driver")
-prop.setProperty("user", "")
-prop.setProperty("password", "")
+prop.setProperty("user", args(0))
+prop.setProperty("password", args(1))
 
 val url = "jdbc:postgresql://10.0.0.12:5432/testing"
 val table = "combinedTable"
