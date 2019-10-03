@@ -59,7 +59,7 @@ def createZipMap (zipTablePath : String) = {
 
 val zipMap = createZipMap(zipPath)
 
-val getZipWithID = udf((startStion: String, zipMap: HashMap) => { 
+val getZipWithID = udf((startStion: String, zipMap: Map) => { 
 	
 	if(zipMap.contains(startStion)) 
 		 if(zipMap(startStion).length >0){
