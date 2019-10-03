@@ -179,7 +179,7 @@ val procssedyellowDF = departwithCCPercentYellow.join(distanceDFYellow, joinSeqY
 //departCCDistDF.show()
 //println("yellow count: "+procssedyellowDF.count())
 
-
+/*
 val greenDataPath = ("s3a://nycyellowgreentaxitrip/trip data/greentaxi/")
 val greenDF = spark.read.format("csv").option("header", "true").option("mode", "DROPMALFORMED")load(greenDataPath)
 
@@ -207,11 +207,11 @@ val distanceDFGreen = taxiWithZipsGreen.select("lpep_pickup_datetime", "PULocati
 val processedGreenDF = departwithCCPercentGreen.join(distanceDFGreen, joinSeqGreen).join(dispatch_percentGreen, joinSeqGreen).withColumnRenamed("PULocationID", "start_zip").withColumnRenamed("DOLocationID", "end_zip").withColumnRenamed("count", "green_trip_count").withColumnRenamed("avg(trip_distance)", "green_trip_distance_avg")
 
 //println("green count: "+processedGreenDF.count())
-
+*/
 val joinSeqComb = Seq("date", "hour", "start_zip", "end_zip")
-val combinedDFs = procssedyellowDF.join(processedBikeDF, joinSeqComb).join(processedGreenDF, joinSeqComb)
+//val combinedDFs = procssedyellowDF.join(processedBikeDF, joinSeqComb).join(processedGreenDF, joinSeqComb)
 
-
+val combinedDFs = procssedyellowDF.join(processedBikeDF, joinSeqComb)
 
 val prop = new java.util.Properties
 prop.setProperty("driver", "org.postgresql.Driver")
