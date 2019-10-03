@@ -172,7 +172,7 @@ val departWithCCYellow = departureDFYellow.join(creditCardCountYellow, joinSeqYe
 val departwithCCPercentYellow = departWithCCYellow.withColumn("yellow_cc_percent", $"yellow_cc_count" / $"count").withColumn("hour",getHour($"tpep_pickup_datetime")).withColumn("date", getDate($"tpep_pickup_datetime"))
 
 val distanceDFYellow = taxiWithZipsYellow.select("tpep_pickup_datetime", "PULocationID", "DOLocationID", "trip_distance").groupBy("tpep_pickup_datetime", "PULocationID", "DOLocationID").avg("trip_distance")
-val procssedyellowDF = departwithCCPercentYellow.join(distanceDFYellow, joinSeqYellow).withColumnRenamed("PULocationID", "start_zip").withColumnRenamed("DOLocationID", "end_zip").withColumnRenamed("count", "yellow_trip_count").withColumnRenamed("trip_distance", "yellow_trip_distance")
+val procssedyellowDF = departwithCCPercentYellow.join(distanceDFYellow, joinSeqYellow).withColumnRenamed("PULocationID", "start_zip").withColumnRenamed("DOLocationID", "end_zip").withColumnRenamed("count", "yellow_trip_count").withColumnRenamed("avg(trip_distance)", "yellow_trip_distance_avg") 
 //departCCDistDF.show()
 
 
@@ -202,7 +202,7 @@ val dispatchwithDepartGreen = departureDFGreen.join(dispatchedCountGreen, joinSe
 val dispatch_percentGreen = dispatchwithDepartGreen.withColumn("dispatch_percent", $"dispatch_count" / $"count").drop("count")
 
 val distanceDFGreen = taxiWithZipsGreen.select("lpep_pickup_datetime", "PULocationID", "DOLocationID", "trip_distance").groupBy("lpep_pickup_datetime", "PULocationID", "DOLocationID").avg("trip_distance")
-val processedGreenDF = departwithCCPercentGreen.join(distanceDFGreen, joinSeqGreen).join(dispatch_percentGreen, joinSeqGreen).withColumnRenamed("PULocationID", "start_zip").withColumnRenamed("DOLocationID", "end_zip").withColumnRenamed("count", "green_trip_count").withColumnRenamed("trip_distance", "green_trip_distance")
+val processedGreenDF = departwithCCPercentGreen.join(distanceDFGreen, joinSeqGreen).join(dispatch_percentGreen, joinSeqGreen).withColumnRenamed("PULocationID", "start_zip").withColumnRenamed("DOLocationID", "end_zip").withColumnRenamed("count", "green_trip_count").withColumnRenamed("avg(trip_distance)", "green_trip_distance_avg")
 
 
 
