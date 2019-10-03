@@ -59,11 +59,11 @@ def createZipMap (zipTablePath : String) = {
 
 val zipMap = createZipMap(zipPath)
 
-val getZipWithID = udf((startStion: String) => { 
+val getZipWithID = udf((startStion: String, zipMapDF: DataFrame) => { 
 	
-	if(zipMap.contains(startStion)) 
-		 if(zipMap(startStion).length >0){
-		 	zipMap(startStion)
+	if(zipMapDF.contains(startStion)) 
+		 if(zipMapDF(startStion).length >0){
+		 	zipMapDF(startStion)
 		 } else {
 		 	val none = "00000"
 			none
@@ -91,13 +91,6 @@ val getDate = udf((starttime: String) => {
 })
 
 
-
-
-
-
-
-
-
 val bikeData = loadCitiTripData(bikeDataPath)
 
 // sc.setCheckpointDir("hdfs://ec2-35-163-178-143.us-west-2.compute.amazonaws.com:9000/checkpoint")
@@ -106,8 +99,8 @@ val bikeData = loadCitiTripData(bikeDataPath)
 val bikeDataStart = bikeData.withColumn("starttime",dateToTimeStampBike($"starttime"))
 //val bikeDataDateHour = bikeDataStart.withColumn("hour",getHour($"starttime"))
 
-val joinedDFWithZip = bikeDataStart.withColumn("start station id",getZipWithID($"start station id"))
-val joinedDFWithZip1 = joinedDFWithZip.withColumn("end station id",getZipWithID($"end station id"))
+val joinedDFWithZip = bikeDataStart.withColumn("start station id",getZipWithID($"start station id", zipMap))
+val joinedDFWithZip1 = joinedDFWithZip.withColumn("end station id",getZipWithID($"end station id", zipMap))
 
 
 // create DF for departure stations with the distribution of final destinations
@@ -133,24 +126,19 @@ def joinedDepartAndDuration = {
 
 
 val processedBikeDF = joinedDepartAndDuration.withColumnRenamed("start station id", "start_zip").withColumnRenamed("end station id", "end_zip").withColumnRenamed("count", "bike_trip_count")
-
-
 println("bike count: "+processedBikeDF.count())
 
-val yellowDataPath = ("s3a://nycyellowgreentaxitrip/trip data/yellowtaxi/")
 
+
+val yellowDataPath = ("s3a://nycyellowgreentaxitrip/trip data/yellowtaxi/")
 val yellowDF = spark.read.format("csv").option("header", "true").load(yellowDataPath)
 
 val dateToTimeStamp = udf((starttime: String) => { 
 	starttime.split(':')(0)
 })
 
-
 val zipPathTaxi: String = "hdfs://ec2-54-68-153-54.us-west-2.compute.amazonaws.com:9000/zipcode_tables/taxiZoneZips.csv"
-
-
 val zipMapTaxi = createZipMap(zipPathTaxi)
-
 
 val toDouble = udf((numString: String) => { 
 	
@@ -159,10 +147,8 @@ val toDouble = udf((numString: String) => {
 	
 })
 
-
-
 val taxiStartTimeYellow = yellowDF.withColumn("tpep_pickup_datetime",dateToTimeStamp($"tpep_pickup_datetime"))
-val taxiWithZipsYellow = taxiStartTimeYellow.withColumn("PULocationID",getZipWithID($"PULocationID")).withColumn("DOLocationID",getZipWithID($"DOLocationID")).filter($"trip_distance" !== ".00").withColumn("trip_distance",toDouble($"trip_distance"))
+val taxiWithZipsYellow = taxiStartTimeYellow.withColumn("PULocationID",getZipWithID($"PULocationID", zipMapTaxi)).withColumn("DOLocationID",getZipWithID($"DOLocationID", zipMapTaxi)).filter($"trip_distance" !== ".00").withColumn("trip_distance",toDouble($"trip_distance"))
 
 
 val departureDFYellow = taxiWithZipsYellow.select("tpep_pickup_datetime", "PULocationID", "DOLocationID").groupBy("tpep_pickup_datetime", "PULocationID", "DOLocationID").count()
@@ -178,12 +164,11 @@ println("yellow count: "+procssedyellowDF.count())
 
 
 val greenDataPath = ("s3a://nycyellowgreentaxitrip/trip data/greentaxi/")
-
 val greenDF = spark.read.format("csv").option("header", "true").option("mode", "DROPMALFORMED")load(greenDataPath)
 
 
 val taxiStartTimeGreen = greenDF.withColumn("lpep_pickup_datetime",dateToTimeStamp($"lpep_pickup_datetime"))
-val taxiWithZipsGreen = taxiStartTimeGreen.withColumn("PULocationID",getZipWithID($"PULocationID")).withColumn("DOLocationID",getZipWithID($"DOLocationID")).filter($"trip_distance" !== ".00").withColumn("trip_distance",toDouble($"trip_distance"))
+val taxiWithZipsGreen = taxiStartTimeGreen.withColumn("PULocationID",getZipWithID($"PULocationID", zipMapTaxi)).withColumn("DOLocationID",getZipWithID($"DOLocationID", zipMapTaxi)).filter($"trip_distance" !== ".00").withColumn("trip_distance",toDouble($"trip_distance"))
 
 // sc.setCheckpointDir("hdfs://ec2-54-68-153-54.us-west-2.compute.amazonaws.com:9000/checkpoint")
 // taxiWithZips.checkpoint()
