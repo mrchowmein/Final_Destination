@@ -135,7 +135,7 @@ def joinedDepartAndDuration = {
 val processedBikeDF = joinedDepartAndDuration.withColumnRenamed("start station id", "start_zip").withColumnRenamed("end station id", "end_zip").withColumnRenamed("count", "bike_trip_count")
 
 
-
+println("bike count: "+processedBikeDF.count())
 
 val yellowDataPath = ("s3a://nycyellowgreentaxitrip/trip data/yellowtaxi/")
 
@@ -174,7 +174,7 @@ val departwithCCPercentYellow = departWithCCYellow.withColumn("yellow_cc_percent
 val distanceDFYellow = taxiWithZipsYellow.select("tpep_pickup_datetime", "PULocationID", "DOLocationID", "trip_distance").groupBy("tpep_pickup_datetime", "PULocationID", "DOLocationID").avg("trip_distance")
 val procssedyellowDF = departwithCCPercentYellow.join(distanceDFYellow, joinSeqYellow).withColumnRenamed("PULocationID", "start_zip").withColumnRenamed("DOLocationID", "end_zip").withColumnRenamed("count", "yellow_trip_count").withColumnRenamed("avg(trip_distance)", "yellow_trip_distance_avg") 
 //departCCDistDF.show()
-
+println("yellow count: "+procssedyellowDF.count())
 
 
 val greenDataPath = ("s3a://nycyellowgreentaxitrip/trip data/greentaxi/")
@@ -204,7 +204,7 @@ val dispatch_percentGreen = dispatchwithDepartGreen.withColumn("dispatch_percent
 val distanceDFGreen = taxiWithZipsGreen.select("lpep_pickup_datetime", "PULocationID", "DOLocationID", "trip_distance").groupBy("lpep_pickup_datetime", "PULocationID", "DOLocationID").avg("trip_distance")
 val processedGreenDF = departwithCCPercentGreen.join(distanceDFGreen, joinSeqGreen).join(dispatch_percentGreen, joinSeqGreen).withColumnRenamed("PULocationID", "start_zip").withColumnRenamed("DOLocationID", "end_zip").withColumnRenamed("count", "green_trip_count").withColumnRenamed("avg(trip_distance)", "green_trip_distance_avg")
 
-
+println("green count: "+processedGreenDF.count())
 
 val joinSeqComb = Seq("date", "hour", "start_zip", "end_zip")
 val combinedDFs = procssedyellowDF.join(processedBikeDF, joinSeqComb).join(processedGreenDF, joinSeqComb)
