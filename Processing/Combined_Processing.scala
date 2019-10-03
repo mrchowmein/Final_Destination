@@ -59,7 +59,7 @@ def createZipMap (zipTablePath : String) = {
 
 val zipMap = createZipMap(zipPath)
 
-val getZipWithID = udf((startStion: String, zipMap: Map) => { 
+val getZipWithID = udf((startStion: String) => { 
 	
 	if(zipMap.contains(startStion)) 
 		 if(zipMap(startStion).length >0){
@@ -77,6 +77,23 @@ val getZipWithID = udf((startStion: String, zipMap: Map) => {
 	
 })
 
+val getZipWithIDTaxi = udf((startStion: String) => { 
+	
+	if(zipMapTaxi.contains(startStion)) 
+		 if(zipMapTaxi(startStion).length >0){
+		 	zipMapTaxi(startStion)
+		 } else {
+		 	val none = "00000"
+			none
+		 }
+		 
+
+	else{
+		val none = "00000"
+		none
+	} 
+	
+})
 
 val getHour = udf((starttime: String) => { 
 	val hour = starttime.split(' ')(1)
@@ -99,8 +116,8 @@ val bikeData = loadCitiTripData(bikeDataPath)
 val bikeDataStart = bikeData.withColumn("starttime",dateToTimeStampBike($"starttime"))
 //val bikeDataDateHour = bikeDataStart.withColumn("hour",getHour($"starttime"))
 
-val joinedDFWithZip = bikeDataStart.withColumn("start station id",getZipWithID($"start station id", zipMap))
-val joinedDFWithZip1 = joinedDFWithZip.withColumn("end station id",getZipWithID($"end station id", zipMap))
+val joinedDFWithZip = bikeDataStart.withColumn("start station id",getZipWithID($"start station id"))
+val joinedDFWithZip1 = joinedDFWithZip.withColumn("end station id",getZipWithID($"end station id"))
 
 
 // create DF for departure stations with the distribution of final destinations
@@ -148,7 +165,7 @@ val toDouble = udf((numString: String) => {
 })
 
 val taxiStartTimeYellow = yellowDF.withColumn("tpep_pickup_datetime",dateToTimeStamp($"tpep_pickup_datetime"))
-val taxiWithZipsYellow = taxiStartTimeYellow.withColumn("PULocationID",getZipWithID($"PULocationID", zipMapTaxi)).withColumn("DOLocationID",getZipWithID($"DOLocationID", zipMapTaxi)).filter($"trip_distance" !== ".00").withColumn("trip_distance",toDouble($"trip_distance"))
+val taxiWithZipsYellow = taxiStartTimeYellow.withColumn("PULocationID",getZipWithIDTaxi($"PULocationID")).withColumn("DOLocationID",getZipWithID($"DOLocationID")).filter($"trip_distance" !== ".00").withColumn("trip_distance",toDouble($"trip_distance"))
 
 
 val departureDFYellow = taxiWithZipsYellow.select("tpep_pickup_datetime", "PULocationID", "DOLocationID").groupBy("tpep_pickup_datetime", "PULocationID", "DOLocationID").count()
@@ -168,7 +185,7 @@ val greenDF = spark.read.format("csv").option("header", "true").option("mode", "
 
 
 val taxiStartTimeGreen = greenDF.withColumn("lpep_pickup_datetime",dateToTimeStamp($"lpep_pickup_datetime"))
-val taxiWithZipsGreen = taxiStartTimeGreen.withColumn("PULocationID",getZipWithID($"PULocationID", zipMapTaxi)).withColumn("DOLocationID",getZipWithID($"DOLocationID", zipMapTaxi)).filter($"trip_distance" !== ".00").withColumn("trip_distance",toDouble($"trip_distance"))
+val taxiWithZipsGreen = taxiStartTimeGreen.withColumn("PULocationID",getZipWithIDTaxi($"PULocationID")).withColumn("DOLocationID",getZipWithIDTaxi($"DOLocationID")).filter($"trip_distance" !== ".00").withColumn("trip_distance",toDouble($"trip_distance"))
 
 // sc.setCheckpointDir("hdfs://ec2-54-68-153-54.us-west-2.compute.amazonaws.com:9000/checkpoint")
 // taxiWithZips.checkpoint()
