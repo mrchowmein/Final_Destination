@@ -151,7 +151,7 @@ val processedBikeDF = joinedDepartAndDuration.withColumnRenamed("start station i
 
 
 val yellowDataPath = ("s3a://nycyellowgreentaxitrip/trip data/yellowtaxi/")
-val yellowDF = spark.read.format("csv").option("header", "true").option("mode", "DROPMALFORMED").load(yellowDataPath)
+val yellowDF = spark.read.format("csv").option("header", "true").load(yellowDataPath)
 
 val dateToTimeStamp = udf((pickupTime: String) => {
 	if(pickupTime.contains(":")){
