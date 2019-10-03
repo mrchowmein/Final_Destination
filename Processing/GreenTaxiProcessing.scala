@@ -9,6 +9,7 @@ import org.apache.spark.sql.catalyst.catalog.BucketSpec
 
 val greenDataPath = ("s3a://nycyellowgreentaxitrip/trip data/greentaxi/")
 
+val args = sc.getConf.get("spark.driver.args").split("\\s+")
 /*
 
 root
@@ -133,16 +134,17 @@ val dispatchwithDepart = departureDF.join(dispatchedCount, joinSeq)
 val dispatch_percent = dispatchwithDepart.withColumn("dispatch_percent", $"dispatch_count" / $"count").drop("count")
 
 val distanceDF = taxiWithZips.select("lpep_pickup_datetime", "PULocationID", "DOLocationID", "trip_distance").groupBy("lpep_pickup_datetime", "PULocationID", "DOLocationID").avg("trip_distance")
-val departCCDistDF= departwithCCPercent.join(distanceDF, joinSeq).join(dispatch_percent, joinSeq)
-departCCDistDF.collect()
+val departCCDistDF= departwithCCPercent.join(distanceDF, joinSeq).join(dispatch_percent, joinSeq).withColumnRenamed("cc_percent", "green_cc_percent").drop("cc_count").withColumnRenamed("avg(trip_distance)", "green_avg_dist").withColumnRenamed("count", "green_count")
+//departCCDistDF.collect()
 
 :require postgresql-42.2.8.jar
 val prop = new java.util.Properties
 prop.setProperty("driver", "org.postgresql.Driver")
-prop.setProperty("user", "")
-prop.setProperty("password", "")
+prop.setProperty("user", args(0))
+prop.setProperty("password", args(1))
 
 val url = "jdbc:postgresql://10.0.0.12:5432/testing"
 val table = "green_taxi_table2"
+
 
 departCCDistDF.write.mode("Overwrite").jdbc(url, table, prop)
