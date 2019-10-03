@@ -155,7 +155,7 @@ val yellowDF = spark.read.format("csv").option("header", "true").option("mode", 
 
 val dateToTimeStamp = udf((pickupTime: String) => {
 	if(pickupTime.contains(":")){
-		starttime.split(':')(0)
+		pickupTime.split(':')(0)
 	}
 })
 
