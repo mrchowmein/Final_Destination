@@ -148,7 +148,7 @@ def joinedDepartAndDuration = {
 }
 
 
-val processedBikeDF = joinedDepartAndDuration.withColumnRenamed("start station id", "start_zip").withColumnRenamed("end station id", "end_zip").withColumnRenamed("count", "bike_count").withColumnRenamed("avg(tripduration)", "bike_duration").drop("starttime").drop("sub_count")
+val processedBikeDF = joinedDepartAndDuration.withColumnRenamed("start station id", "start_zip").withColumnRenamed("end station id", "end_zip").withColumnRenamed("count", "bike_trip_count").withColumnRenamed("avg(tripduration)", "bike_duration").drop("starttime").drop("sub_count")
 processedBikeDF.printSchema()
 
 //println("bike count: "+processedBikeDF.count())
@@ -225,7 +225,7 @@ procssedyellowDF.printSchema()
 val joinSeqComb = Seq("date", "hour", "start_zip", "end_zip")
 //val combinedDFs = procssedyellowDF.join(processedBikeDF, joinSeqComb).join(processedGreenDF, joinSeqComb)
 
-val combinedDFs = processedBikeDF.join(procssedyellowDF, joinSeqComb)
+val combinedDFs = processedBikeDF.join(procssedyellowDF, joinSeqComb, "full")
 
 val prop = new java.util.Properties
 prop.setProperty("driver", "org.postgresql.Driver")
