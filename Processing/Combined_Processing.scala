@@ -188,10 +188,11 @@ val departwithCCPercentYellow = departWithCCYellow.withColumn("yellow_cc_percent
 
 val distanceDFYellow = taxiWithZipsYellow.select("tpep_pickup_datetime", "PULocationID", "DOLocationID", "trip_distance").groupBy("tpep_pickup_datetime", "PULocationID", "DOLocationID").avg("trip_distance")
 val procssedyellowDF = departwithCCPercentYellow.join(distanceDFYellow, joinSeqYellow).withColumnRenamed("PULocationID", "start_zip").withColumnRenamed("DOLocationID", "end_zip").withColumnRenamed("count", "yellow_trip_count").withColumnRenamed("avg(trip_distance)", "yellow_trip_distance_avg").drop("tpep_pickup_datetime")
-//departCCDistDF.show()
-//println("yellow count: "+procssedyellowDF.count())
 
-/*
+procssedyellowDF.printSchema()
+
+
+
 val greenDataPath = ("s3a://nycyellowgreentaxitrip/trip data/greentaxi/")
 val greenDF = spark.read.format("csv").option("header", "true").option("mode", "DROPMALFORMED")load(greenDataPath)
 
@@ -216,12 +217,12 @@ val dispatchwithDepartGreen = departureDFGreen.join(dispatchedCountGreen, joinSe
 val dispatch_percentGreen = dispatchwithDepartGreen.withColumn("dispatch_percent", $"dispatch_count" / $"count").drop("count")
 
 val distanceDFGreen = taxiWithZipsGreen.select("lpep_pickup_datetime", "PULocationID", "DOLocationID", "trip_distance").groupBy("lpep_pickup_datetime", "PULocationID", "DOLocationID").avg("trip_distance")
-val processedGreenDF = departwithCCPercentGreen.join(distanceDFGreen, joinSeqGreen).join(dispatch_percentGreen, joinSeqGreen).withColumnRenamed("PULocationID", "start_zip").withColumnRenamed("DOLocationID", "end_zip").withColumnRenamed("count", "green_trip_count").withColumnRenamed("avg(trip_distance)", "green_trip_distance_avg")
-
+val processedGreenDF = departwithCCPercentGreen.join(distanceDFGreen, joinSeqGreen).join(dispatch_percentGreen, joinSeqGreen).withColumnRenamed("PULocationID", "start_zip").withColumnRenamed("DOLocationID", "end_zip").withColumnRenamed("count", "green_trip_count").withColumnRenamed("avg(trip_distance)", "green_trip_distance_avg").drop("lpep_pickup_datetime")
+procssedGreenDF.printSchema()
 //println("green count: "+processedGreenDF.count())
-*/
 
-procssedyellowDF.printSchema()
+
+
 val joinSeqComb = Seq("date", "hour", "start_zip", "end_zip")
 //val combinedDFs = procssedyellowDF.join(processedBikeDF, joinSeqComb).join(processedGreenDF, joinSeqComb)
 
@@ -233,7 +234,7 @@ prop.setProperty("user", args(0))
 prop.setProperty("password", args(1))
 
 val url = "jdbc:postgresql://10.0.0.12:5432/testing"
-val table = "combinedTable"
+val table = "combinedTable2"
 
 combinedDFs.write.mode("Overwrite").jdbc(url, table, prop)
 
