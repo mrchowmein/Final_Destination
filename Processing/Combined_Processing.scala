@@ -218,7 +218,7 @@ val dispatch_percentGreen = dispatchwithDepartGreen.withColumn("dispatch_percent
 
 val distanceDFGreen = taxiWithZipsGreen.select("lpep_pickup_datetime", "PULocationID", "DOLocationID", "trip_distance").groupBy("lpep_pickup_datetime", "PULocationID", "DOLocationID").avg("trip_distance")
 val processedGreenDF = departwithCCPercentGreen.join(distanceDFGreen, joinSeqGreen).join(dispatch_percentGreen, joinSeqGreen).withColumnRenamed("PULocationID", "start_zip").withColumnRenamed("DOLocationID", "end_zip").withColumnRenamed("count", "green_trip_count").withColumnRenamed("avg(trip_distance)", "green_trip_distance_avg").drop("lpep_pickup_datetime")
-procssedGreenDF.printSchema()
+processedGreenDF.printSchema()
 //println("green count: "+processedGreenDF.count())
 
 
