@@ -220,7 +220,7 @@ val processedGreenDF = departwithCCPercentGreen.join(distanceDFGreen, joinSeqGre
 val joinSeqComb = Seq("date", "hour", "start_zip", "end_zip")
 //val combinedDFs = procssedyellowDF.join(processedBikeDF, joinSeqComb).join(processedGreenDF, joinSeqComb)
 
-val combinedDFs = procssedyellowDF.join(processedBikeDF, joinSeqComb)
+val combinedDFs = processedBikeDF.join(processedBikeDF, joinSeqComb)
 
 val prop = new java.util.Properties
 prop.setProperty("driver", "org.postgresql.Driver")
