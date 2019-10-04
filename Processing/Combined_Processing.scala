@@ -149,6 +149,8 @@ def joinedDepartAndDuration = {
 
 
 val processedBikeDF = joinedDepartAndDuration.withColumnRenamed("start station id", "start_zip").withColumnRenamed("end station id", "end_zip").withColumnRenamed("count", "bike_trip_count").drop("starttime")
+processedBikeDF.show()
+
 //println("bike count: "+processedBikeDF.count())
 
 
@@ -218,6 +220,8 @@ val processedGreenDF = departwithCCPercentGreen.join(distanceDFGreen, joinSeqGre
 
 //println("green count: "+processedGreenDF.count())
 */
+
+procssedyellowDF.show()
 val joinSeqComb = Seq("date", "hour", "start_zip", "end_zip")
 //val combinedDFs = procssedyellowDF.join(processedBikeDF, joinSeqComb).join(processedGreenDF, joinSeqComb)
 
