@@ -148,7 +148,7 @@ def joinedDepartAndDuration = {
 }
 
 
-val processedBikeDF = joinedDepartAndDuration.withColumnRenamed("start station id", "start_zip").withColumnRenamed("end station id", "end_zip").withColumnRenamed("count", "bike_count").withColumnRenamed("avg(tripduration", "bike_duration").drop("starttime").drop("sub_count")
+val processedBikeDF = joinedDepartAndDuration.withColumnRenamed("start station id", "start_zip").withColumnRenamed("end station id", "end_zip").withColumnRenamed("count", "bike_count").withColumnRenamed("avg(tripduration)", "bike_duration").drop("starttime").drop("sub_count")
 processedBikeDF.printSchema()
 
 //println("bike count: "+processedBikeDF.count())
@@ -187,7 +187,7 @@ val departWithCCYellow = departureDFYellow.join(creditCardCountYellow, joinSeqYe
 val departwithCCPercentYellow = departWithCCYellow.withColumn("yellow_cc_percent", $"yellow_cc_count" / $"count").withColumn("hour",getHour($"tpep_pickup_datetime")).withColumn("date", getDate($"tpep_pickup_datetime"))
 
 val distanceDFYellow = taxiWithZipsYellow.select("tpep_pickup_datetime", "PULocationID", "DOLocationID", "trip_distance").groupBy("tpep_pickup_datetime", "PULocationID", "DOLocationID").avg("trip_distance")
-val procssedyellowDF = departwithCCPercentYellow.join(distanceDFYellow, joinSeqYellow).withColumnRenamed("PULocationID", "start_zip").withColumnRenamed("DOLocationID", "end_zip").withColumnRenamed("count", "yellow_trip_count").withColumnRenamed("avg(trip_distance)", "yellow_trip_distance_avg") 
+val procssedyellowDF = departwithCCPercentYellow.join(distanceDFYellow, joinSeqYellow).withColumnRenamed("PULocationID", "start_zip").withColumnRenamed("DOLocationID", "end_zip").withColumnRenamed("count", "yellow_trip_count").withColumnRenamed("avg(trip_distance)", "yellow_trip_distance_avg").drop("tpep_pickup_datetime")
 //departCCDistDF.show()
 //println("yellow count: "+procssedyellowDF.count())
 
@@ -225,7 +225,7 @@ procssedyellowDF.printSchema()
 val joinSeqComb = Seq("date", "hour", "start_zip", "end_zip")
 //val combinedDFs = procssedyellowDF.join(processedBikeDF, joinSeqComb).join(processedGreenDF, joinSeqComb)
 
-val combinedDFs = processedBikeDF.join(processedBikeDF, joinSeqComb)
+val combinedDFs = processedBikeDF.join(procssedyellowDF, joinSeqComb)
 
 val prop = new java.util.Properties
 prop.setProperty("driver", "org.postgresql.Driver")
