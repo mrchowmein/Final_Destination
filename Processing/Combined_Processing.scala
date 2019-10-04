@@ -226,7 +226,7 @@ processedGreenDF.printSchema()
 val joinSeqComb = Seq("date", "hour", "start_zip", "end_zip")
 //val combinedDFs = procssedyellowDF.join(processedBikeDF, joinSeqComb).join(processedGreenDF, joinSeqComb)
 
-val combinedDFs = processedBikeDF.join(processedyellowDF, joinSeqComb, "full").join(processedGreenDF, joinSeqComb)
+val combinedDFs = processedBikeDF.join(processedyellowDF, joinSeqComb, "full").join(processedGreenDF, joinSeqComb, "full")
 
 val prop = new java.util.Properties
 prop.setProperty("driver", "org.postgresql.Driver")
@@ -234,7 +234,7 @@ prop.setProperty("user", args(0))
 prop.setProperty("password", args(1))
 
 val url = "jdbc:postgresql://10.0.0.12:5432/testing"
-val table = "combinedTable2"
+val table = "combined_multimodal_table"
 
 combinedDFs.write.mode("Overwrite").jdbc(url, table, prop)
 
