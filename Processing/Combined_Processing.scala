@@ -148,7 +148,7 @@ def joinedDepartAndDuration = {
 }
 
 
-val processedBikeDF = joinedDepartAndDuration.withColumnRenamed("start station id", "start_zip").withColumnRenamed("end station id", "end_zip").withColumnRenamed("count", "bike_trip_count")
+val processedBikeDF = joinedDepartAndDuration.withColumnRenamed("start station id", "start_zip").withColumnRenamed("end station id", "end_zip").withColumnRenamed("count", "bike_trip_count").drop("starttime")
 //println("bike count: "+processedBikeDF.count())
 
 
