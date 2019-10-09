@@ -19,6 +19,8 @@ The color of the destination indicate the number of travelers to that said locat
 
 # Input Datasets
 New York City Taxi and Limousine Green Taxi Data: ~9gb 
+
 New York City Taxi and Limousine Yellow Taxi Data: ~230gb
+
 New York City Motivate/Lyft CitiBike: ~18gb
 
