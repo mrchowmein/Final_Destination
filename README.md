@@ -2,7 +2,7 @@
 
 Link to the presentation: [Link](https://docs.google.com/presentation/d/1VzdHcnHTR7vvGU0Y7kmBNHEqORchQm-yhPloawFJiUo/edit?usp=sharing)
 
-Tableau Demo:[Link](
+Tableau Demo: [Link](
 https://public.tableau.com/views/FinalDestinationAug-Sept2018/Dashboard1?:embed=y&:display_count=yes&publish=yes&:origin=viz_share_link)
 
 
@@ -16,4 +16,9 @@ The color of the destination indicate the number of travelers to that said locat
 
 # Implementation
 ![alt text](https://raw.githubusercontent.com/mrchowmein/Final_Destination/master/images/Screen%20Shot%202019-10-08%20at%202.02.27%20PM.png)
+
+# Input Datasets
+New York City Taxi and Limousine Green Taxi Data: ~9gb 
+New York City Taxi and Limousine Yellow Taxi Data: ~230gb
+New York City Motivate/Lyft CitiBike: ~18gb
 
