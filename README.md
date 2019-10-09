@@ -1,8 +1,8 @@
 # Final Destination Analytics
 
-Link to the presentation: https://docs.google.com/presentation/d/1VzdHcnHTR7vvGU0Y7kmBNHEqORchQm-yhPloawFJiUo/edit?usp=sharing
+Link to the presentation: [Link](https://docs.google.com/presentation/d/1VzdHcnHTR7vvGU0Y7kmBNHEqORchQm-yhPloawFJiUo/edit?usp=sharing)
 
-Demo:[Link](
+Tableau Demo:[Link](
 https://public.tableau.com/views/FinalDestinationAug-Sept2018/Dashboard1?:embed=y&:display_count=yes&publish=yes&:origin=viz_share_link)
 
 
