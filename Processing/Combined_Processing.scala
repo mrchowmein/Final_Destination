@@ -16,7 +16,7 @@ val args = sc.getConf.get("spark.driver.args").split("\\s+")
 def loadCitiTripData (bikeDataPath : String): DataFrame =  { 
 
 	val schema = (new StructType).add("tripduration",DoubleType,true).add("starttime",StringType,true).add("stoptime",StringType,true).add("start station id",StringType,true).add("start station name",StringType,true).add("start station latitude",StringType,true).add("start station longitude",StringType,true).add("end station id",StringType,true).add("end station name",StringType,true).add("end station latitude",StringType,true).add("end station longitude",StringType,true).add("bikeid",StringType,true).add("usertype",StringType,true).add("birth year",IntegerType,true).add("gender",StringType,true)
-	val bikeData = spark.read.format("csv").option("header", "false").schema(schema).option("mode", "PERMISSIVE").load(bikeDataPath)
+	val bikeData = spark.read.format("csv").option("header", "false").schema(schema).option("mode", "DROPMALFORMED").load(bikeDataPath)
 	bikeData
 }
 
