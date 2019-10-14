@@ -32,3 +32,5 @@ val outputResults = joinedBikes.map(t=>t._1 + " " + (t._2._1 - t._2._1))
 //save test log
 print(outputResults)
 outputResults.coalesce(1,true).saveAsTextFile("hdfs://ec2-54-68-153-54.us-west-2.compute.amazonaws.com:9000/2019060601OutputTestLog")
+
+System.exit(0)

@@ -238,6 +238,7 @@ val table = "combined_multimodal_table"
 
 combinedDFs.write.mode("Overwrite").jdbc(url, table, prop)
 
+System.exit(0)
 
 
 

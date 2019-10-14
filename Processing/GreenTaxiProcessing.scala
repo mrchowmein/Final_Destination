@@ -148,3 +148,4 @@ val table = "green_taxi_table2"
 
 
 departCCDistDF.write.mode("Overwrite").jdbc(url, table, prop)
+System.exit(0)
