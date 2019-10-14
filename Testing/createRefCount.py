@@ -18,7 +18,7 @@ with open('/home/ubuntu/Final_Destination/CitiBikeZipcode/stationZip.csv') as cs
             stationDict[stationId] = [lat, long, postal]
 
 #readinsample
-with open('./RefSource/sample2019060600.csv') as csvfile:
+with open('/home/ubuntu/Final_Destination/Testing/RefSource/sample2019060600.csv') as csvfile:
     readCSV = csv.reader(csvfile, delimiter=',')
     next(readCSV)
 
