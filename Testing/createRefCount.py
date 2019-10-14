@@ -5,7 +5,7 @@ stationDict = {}
 sampleDict ={}
 
 #read in station lookup table
-with open('../CitiBikeZipcode/stationZip.csv') as csvfile:
+with open('/home/ubuntu/Final_Destination/CitiBikeZipcode/stationZip.csv') as csvfile:
     readCSV = csv.reader(csvfile, delimiter=',')
     next(readCSV)
 
