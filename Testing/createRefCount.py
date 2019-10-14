@@ -49,7 +49,7 @@ with open('/home/ubuntu/Final_Destination/Testing/RefSource/sample2019060600.csv
 
 
 #save refcheckfile
-with open('./RefSource/2019060601RefCount.csv', mode='w') as csv_file:
+with open('/home/ubuntu/Final_Destination/Testing/RefSource/2019060601RefCount.csv', mode='w') as csv_file:
     fieldnames = ['key', 'count']
     writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
 
