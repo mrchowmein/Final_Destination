@@ -14,4 +14,4 @@ hdfs dfs -put ./TaxiZipcode/taxiZoneZips.csv /zipcode_tables
 hdfs dfs -put ./CitiBikeZipcode/stationZip.csv /zipcode_tables
 
 #run spark script to process all datasets
-spark-shell -i ./Processing/Combined_Processing.scala --conf spark.driver.args="<userid> <password>" --jars /home/ubuntu/postgresql-42.2.8.jar
+spark-shell -i ./Processing/Combined_Processing.scala --conf spark.driver.args="$1 $2" --jars /home/ubuntu/postgresql-42.2.8.jar
