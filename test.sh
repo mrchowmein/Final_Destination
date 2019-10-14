@@ -10,7 +10,7 @@ hdfs dfs -rm -r /testRef
 python3 ./Testing/createRefCount.py
 hdfs dfs -mkdir /testRef
 #move refcount file to hdfs
-hdfs dfs -put 2019060601RefCount.csv /testRef
+hdfs dfs -put ./Testing/2019060601RefCount.csv /testRef
 
 #run output test
-spark-shell -i /Testing/testOutput.scala --conf spark.driver.args="$1 $2" --jars /home/ubuntu/postgresql-42.2.8.jar
+spark-shell -i ./Testing/testOutput.scala --conf spark.driver.args="$1 $2" --jars /home/ubuntu/postgresql-42.2.8.jar
