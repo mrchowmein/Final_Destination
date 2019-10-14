@@ -3,7 +3,7 @@ import org.apache.spark.sql.Row
 
 //parse arguments for pw and user
 val args = sc.getConf.get("spark.driver.args").split("\\s+")
-
+print("starting")
 
 //read in ref bike counts
 val testRef = ("hdfs://ec2-54-68-153-54.us-west-2.compute.amazonaws.com:9000/testRef/2019060601RefCount.csv")
