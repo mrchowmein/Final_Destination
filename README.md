@@ -15,7 +15,7 @@ To use, simply just pick a starting location (zip code) and the date and time in
 The color of the destination indicate the number of travelers to that said location. Intersted in more analytics about the people going to that destination, roll your mouse over the destination and see the break down of how people traveled to that said location. Information currently supported is mode breakdown, subscriber ratio, credit card payment ratio, distance, time and whether a cab was hailed.
 
 # How to Run
-To run, use the run.sh script. You will need to pass a Postgres DB user name and pwd. This will run the Combined_Processing.scala script. This Spark program will create a table that joins all 3 dataset.  Running each of the other scala scripts for each dataset is not needed, unless one wants to create seperate tables in the Postgres DB.
+Directions are intended for my EC2 Spark cluster. To run, use the run.sh script. You will need to pass a Postgres DB user name and pwd. This will run the Combined_Processing.scala script. This Spark program will create a table that joins all 3 dataset.  Running each of the other scala scripts for each dataset is not needed, unless one wants to create seperate tables in the Postgres DB.
 
 
 # Implementation
