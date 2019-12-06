@@ -7,7 +7,7 @@ https://public.tableau.com/views/FinalDestinationAug-Sept2018/Dashboard1?:embed=
 
 
 # Overview
-Are you a city planner or a mobility operation? Ever wonder where people commute to from a part of a city? Ever wonder how they commuted?  Ever wonder what type of transportation mode they used? Wished all this information is in one place and can be viewed simultanously? Then Final Destination might be the pipeline you might be interested in. Final Destination is an alternative transportation analytics pipeline that aggregate historical trip data then shows you where to, when and how people commute in New York City from any spot within New York City.     
+Are you a city planner or a mobility operation? Ever wonder where people commute to from a part of a city? Ever wonder how they commuted?  Ever wonder what type of transportation mode they used? Wished all this information is in one place and can be viewed simultanously? Then Final Destination might be the pipeline you might be interested in. Final Destination is a user analytics pipeline that aggregate alternative transportation trip data. The interface is a Tableau dashboard that shows you where to, when and how people commute in New York City from any spot within New York City.     
 
 # How to Use 
 To use, simply just pick a starting location (zip code) and the date and time information.  The Tableau map interface will show you all the destinations people from the starting location traveled to. 
